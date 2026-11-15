@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>T2 El repertorio de instrucciones y la estructura de un programa · Sistemas basados en Microprocesador · Guía para aprobar</title>
+<meta name="description" content="Sistemas basados en Microprocesador (UPCT, GIEyA): tema 2, El repertorio de instrucciones y la estructura de un programa">
+<meta name="theme-color" content="#1f3c88">
+<link href="https://fonts.googleapis.com" rel="preconnect"><link crossorigin href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Sans:ital,wght@0,400;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script>window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},svg:{fontCache:'global'}};</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+<link rel="stylesheet" href="style.css">
+<style>html{-webkit-text-size-adjust:100%}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+</head>
+<body>
+<div class="hub-bar" style="max-width:1180px;margin:0 auto;padding:10px 16px 0"><a href="https://helionacon-ui.github.io/GIEIA-UPCT/" style="display:inline-flex;align-items:center;gap:6px;font:600 13.5px/1 system-ui,sans-serif;padding:8px 12px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--fg);text-decoration:none">← Todas las guías GIEyA</a><p class="fecha" style="margin:6px 0 0;max-width:none;font:13px/1.45 system-ui,sans-serif;color:var(--muted)">Datos tomados del curso <time datetime="2020-09">2020/21</time> (apuntes de la asignatura, programas de teoría comentados, ejercicios de entrega y la práctica final del ascensor) · página creada en noviembre de 2026</p></div>
+<div class="crumb"><a href="index.html">Sistemas basados en Microprocesador</a><span class="sep">›</span><span>El microcontrolador y su programación</span><span class="sep">›</span><span>T2 · El repertorio de instrucciones y la estructura de un programa</span></div><a href="#top" class="totop" id="totop" aria-label="Volver arriba">↑</a>
+<div class="wrap" id="top">
+<nav aria-label="Índice" class="toc"><a href="index.html" style="--tc:var(--c0)">Portada</a><div class="grp">Empezar</div><a href="index.html#cero" style="--tc:var(--c0)">Empieza aquí desde cero</a><a href="plan.html" style="--tc:var(--c0)">Cómo es la evaluación</a><a href="index.html#progreso" style="--tc:var(--c0)">Tu progreso</a><div class="grp">El microcontrolador y su programación</div><a href="tema-01.html" style="--tc:var(--c2)">T1 El microcontrolador PIC16F84A</a><a href="tema-02.html" style="--tc:var(--c3)" class="on" aria-current="page">T2 El repertorio de instrucciones y la estructura de un programa</a><a href="tema-03.html" style="--tc:var(--c4)">T3 Operaciones aritméticas y lógicas: comparaciones y máscaras</a><a href="tema-04.html" style="--tc:var(--c5)">T4 Gestión del tiempo por cuenta de instrucciones</a><a href="tema-05.html" style="--tc:var(--c6)">T5 El temporizador TMR0 y el divisor de frecuencias</a><div class="grp">Recursos y aplicaciones</div><a href="tema-06.html" style="--tc:var(--c7)">T6 Puertas de entrada y salida</a><a href="tema-07.html" style="--tc:var(--c8)">T7 Periféricos: displays, teclados y actuadores</a><a href="tema-08.html" style="--tc:var(--c1)">T8 Interrupciones</a><a href="tema-09.html" style="--tc:var(--c2)">T9 La memoria EEPROM de datos</a><div class="grp">Practicar</div><a href="cuestiones.html" style="--tc:var(--c8)">Cuestiones de teoría respondidas</a><a href="examenes.html" style="--tc:var(--c8)">Problemas de examen resueltos</a><a href="problemas.html" style="--tc:var(--c8)">Qué cae en el examen</a><a href="laboratorio.html" style="--tc:var(--c7)">Prácticas y herramientas</a><a href="formulario.html" style="--tc:var(--c8)">Formulario</a></nav>
+<main>
+<section class="sec tema" style="--tc:var(--c3);--tcs:var(--c3s)">
+<div class="sh"><span aria-hidden="true" class="badge">2</span><div class="shx"><p class="kick">El microcontrolador y su programación · Tema 2</p><h2 id="t2">El repertorio de instrucciones y la estructura de un programa</h2><div class="tags"><span class="tag">El microcontrolador y su programación</span><span class="tag">Fundamentos</span></div></div></div>
+<div class="zero"><p class="ft">Desde cero</p><p><b>Objetivo:</b> manejar las 35 instrucciones del PIC, entender el bit de destino y escribir la estructura completa de un programa en ensamblador.</p><ul>
+<li>Las <b>35 instrucciones</b> del PIC se agrupan en tres familias: <b>orientadas a byte</b> (operan sobre un registro completo), <b>orientadas a bit</b> (ponen, borran o comprueban un bit) y <b>literales y de control</b> (trabajan con una constante o alteran el flujo).</li>
+<li>El detalle que más confunde al principio es el <b>bit de destino</b> <code>d</code> de las instrucciones orientadas a byte: <code>d=0</code> (o <code>W</code>) guarda el resultado en el registro W; <code>d=1</code> (o <code>F</code>) lo guarda <b>en el propio registro</b>. Así, <code>movf VAR,0</code> lleva VAR a W, y <code>movf VAR,1</code> deja VAR como estaba… pero actualiza la bandera Z, que es precisamente para lo que se usa.</li>
+<li>Las instrucciones que <b>saltan</b> no son saltos al uso: <code>btfsc</code>, <code>btfss</code>, <code>decfsz</code> e <code>incfsz</code> «<b>saltan la siguiente instrucción</b>» si se cumple la condición. Por eso el patrón habitual es poner un <code>goto</code> justo detrás, que se ejecutará o no.</li>
+<li>No existe una instrucción de «salto si igual». La comparación se hace <b>restando</b>: <code>subwf</code> y después mirar las banderas <b>Z</b> (iguales) y <b>C</b> (mayor o igual).</li>
+<li>La estructura de un programa es siempre la misma: directivas de cabecera, definición de variables, <code>org 0x00</code> con un <code>goto</code> al inicio, <code>org 0x04</code> para la rutina de interrupción si la hay, configuración de puertos, bucle principal, subrutinas y <code>end</code>.</li>
+<li>Las <b>directivas</b> (<code>list</code>, <code>#include</code>, <code>equ</code>, <code>org</code>, <code>end</code>) no son instrucciones: no generan código, son órdenes para el ensamblador. <code>equ</code> da nombre a una dirección y <code>org</code> coloca el código en una posición concreta de la memoria de programa.</li>
+<li>Una <b>subrutina</b> se llama con <code>call</code> y termina con <code>return</code> (o <code>retlw k</code>, que además devuelve una constante en W). El <code>retlw</code> es la base de las <b>tablas</b>: un <code>addwf PCL,1</code> seguido de una lista de <code>retlw</code> convierte un índice en un valor.</li>
+<li>El <b>bit de configuración</b> (<code>__config</code>) fija el tipo de oscilador, el perro guardián (WDT) y la protección de código. Si el WDT queda activado sin querer, el programa se reinicia solo cada pocos milisegundos: es un fallo clásico y desconcertante.</li>
+</ul></div>
+<details class="nom"><summary><span aria-hidden="true" class="nom-ic">Aa</span>Nomenclatura del tema 2 <span class="src">9 entradas</span></summary><div class="inner">
+<div class="tw"><table><tr><th>Símbolo</th><th>Significado</th><th>Unidad · nota</th></tr><tr><td class="sym">movlw k</td><td>W ← constante</td><td class="u"></td></tr><tr><td class="sym">movwf f</td><td>f ← W</td><td class="u"></td></tr><tr><td class="sym">d = 0 / 1</td><td>destino</td><td class="u">W / registro</td></tr><tr><td class="sym">subwf f,d</td><td>f − W</td><td class="u">comparar</td></tr><tr><td class="sym">btfsc f,b</td><td>salta si el bit es 0</td><td class="u"></td></tr><tr><td class="sym">decfsz f,d</td><td>decrementa y salta si 0</td><td class="u"></td></tr><tr><td class="sym">retlw k</td><td>retorna con constante</td><td class="u">tablas</td></tr><tr><td class="sym">addwf PCL,1</td><td>salto calculado</td><td class="u">tablas</td></tr><tr><td class="sym">__config</td><td>palabra de configuración</td><td class="u">oscilador, WDT</td></tr></table></div></div></details>
+<figure class="fig"><p class="ft">Simulador interactivo - ejecucion de instrucciones y banderas</p><div data-sim="instrucciones"></div><figcaption>Mueve los controles y observa cómo cambia el resultado: es el mismo cálculo que hay que saber hacer a mano en el examen.</figcaption></figure>
+<h3 id="t2-formulas">Fórmulas y conceptos que hay que saber</h3>
+<div class="box key"><ul><li><b>Las instrucciones que de verdad se usan:</b></li></ul>
+<div class="tw"><table><tr><th>Instrucción</th><th>Qué hace</th><th>Banderas</th><th>CI</th></tr>
+<tr><td><code>movlw k</code></td><td>W ← constante k</td><td>—</td><td>1</td></tr>
+<tr><td><code>movwf f</code></td><td>f ← W</td><td>—</td><td>1</td></tr>
+<tr><td><code>movf f,d</code></td><td>mueve f a W o a sí mismo</td><td>Z</td><td>1</td></tr>
+<tr><td><code>clrf f</code> / <code>clrw</code></td><td>pone a cero</td><td>Z</td><td>1</td></tr>
+<tr><td><code>addwf f,d</code> / <code>subwf f,d</code></td><td>f+W / <b>f−W</b></td><td>C, DC, Z</td><td>1</td></tr>
+<tr><td><code>incf f,d</code> / <code>decf f,d</code></td><td>incrementa / decrementa</td><td>Z</td><td>1</td></tr>
+<tr><td><code>andwf</code>, <code>iorwf</code>, <code>xorwf f,d</code></td><td>lógicas con W</td><td>Z</td><td>1</td></tr>
+<tr><td><code>andlw</code>, <code>iorlw</code>, <code>xorlw k</code></td><td>lógicas con constante</td><td>Z</td><td>1</td></tr>
+<tr><td><code>comf f,d</code></td><td>complemento a 1</td><td>Z</td><td>1</td></tr>
+<tr><td><code>rlf</code> / <code>rrf f,d</code></td><td>rota a través del carry</td><td>C</td><td>1</td></tr>
+<tr><td><code>bsf f,b</code> / <code>bcf f,b</code></td><td>pone a 1 / a 0 el bit b</td><td>—</td><td>1</td></tr>
+<tr><td><code>btfsc f,b</code> / <code>btfss f,b</code></td><td>salta la siguiente si el bit es 0 / 1</td><td>—</td><td>1 ó <b>2</b></td></tr>
+<tr><td><code>decfsz f,d</code> / <code>incfsz f,d</code></td><td>decrementa/incrementa y salta si queda 0</td><td>—</td><td>1 ó <b>2</b></td></tr>
+<tr><td><code>goto k</code> / <code>call k</code></td><td>salto / llamada</td><td>—</td><td><b>2</b></td></tr>
+<tr><td><code>return</code> / <code>retlw k</code> / <code>retfie</code></td><td>retornos</td><td>—</td><td><b>2</b></td></tr>
+<tr><td><code>nop</code></td><td>no hace nada (sirve para ajustar tiempos)</td><td>—</td><td>1</td></tr>
+</table></div>
+<ul><li><b>Esqueleto de un programa:</b></li></ul>
+<div class="code">        list    P=16F84A
+        #include &lt;p16f84a.inc&gt;
+        __config _XT_OSC &amp; _WDT_OFF &amp; _PWRTE_ON
+
+VAR     equ     0x0C            ; variables a partir de 0x0C
+CONTA   equ     0x0D
+
+        org     0x00            ; vector de reset
+        goto    Inicio
+        org     0x04            ; vector de interrupción
+        goto    RSI
+
+Inicio  bsf     STATUS,RP0      ; banco 1
+        movlw   b'00000000'
+        movwf   TRISB           ; PORTB salidas
+        movlw   b'11111111'
+        movwf   TRISA           ; PORTA entradas
+        bcf     STATUS,RP0      ; banco 0
+        clrf    PORTB
+
+Bucle   ; ... programa principal ...
+        goto    Bucle
+
+        end</div>
+<ul><li><b>Tabla con <code>retlw</code></b> (el truco más útil de la asignatura):</li></ul>
+<div class="code">Tabla   addwf   PCL,1       ; salta tantas posiciones como vale W
+        retlw   0x3F        ; 0
+        retlw   0x06        ; 1
+        retlw   0x5B        ; 2
+        ...</div></div>
+<h3 id="t2-metodo">Método paso a paso</h3>
+<ol class="steps">
+<li><b>Escribe primero el esqueleto</b> (cabecera, variables, org, configuración de puertos, bucle, end) y después rellena. En el examen, el esqueleto ya puntúa.</li>
+<li><b>Para cada operación, decide el destino:</b> ¿quieres el resultado en W o en el registro? Ese es el <code>,0</code> o <code>,1</code>.</li>
+<li><b>Para una condición:</b> resta con <code>subwf</code>, mira las banderas y usa <code>btfsc STATUS,Z</code> o <code>btfss STATUS,C</code> seguido del <code>goto</code>.</li>
+<li><b>Para repetir n veces:</b> carga n en una variable y usa el par <code>decfsz</code> + <code>goto</code>.</li>
+<li><b>Para convertir un número en un patrón:</b> tabla con <code>addwf PCL,1</code> y <code>retlw</code>.</li>
+<li><b>Comenta cada línea</b> con los ciclos si el ejercicio pide tiempos: es la forma de no equivocarse al contar.</li>
+</ol>
+<div class="box trap"><h4>Trampas típicas</h4><ul>
+<li>Confundir el <b>bit de destino</b>. <code>addwf VAR,0</code> no modifica VAR; <code>addwf VAR,1</code> sí.</li>
+<li>Creer que <code>btfsc</code> salta <b>a</b> algún sitio. Lo que hace es <b>saltarse</b> la instrucción siguiente.</li>
+<li>Invertir el sentido de <code>subwf</code>: calcula <b>f − W</b>, no W − f. Para comparar «¿es VAR mayor que 5?» hay que cargar 5 en W y hacer <code>subwf VAR,0</code>.</li>
+<li>Olvidar el <code>goto</code> detrás de un <code>btfsc</code>: sin él, el salto no sirve de nada.</li>
+<li>Poner variables en direcciones menores de 0x0C.</li>
+<li>Olvidar el <code>end</code> o el <code>org 0x00</code>.</li>
+<li>Dejar el <b>WDT activado</b> en la palabra de configuración: el programa se reinicia solo cada 18 ms.</li>
+<li>Hacer una tabla con <code>addwf PCL,1</code> que cruce el límite de una página de 256 palabras: el salto va a parar a otro sitio.</li>
+</ul></div>
+<h3 id="t2-problema">Problema resuelto</h3>
+<div class="prob"><div class="enun"><p class="et">Enunciado</p><p>Escribe una subrutina que reciba en W un número del 0 al 9 y devuelva en W el patrón de segmentos para un display de <b>cátodo común</b>, y un programa que muestre en PORTB la cuenta de 0 a 9 con un retardo entre dígitos.</p></div>
+<details class="paso"><summary><span class="pn">✓</span>Ver solución paso a paso</summary><div class="inner"><p><b>1) La tabla.</b> En un display de cátodo común, un segmento se enciende con un <b>1</b>. Con los segmentos conectados a PORTB en el orden \(b_0=a\), \(b_1=b\), … \(b_6=g\):</p>
+<div class="tw"><table><tr><th>Dígito</th><th>Segmentos</th><th>gfedcba</th><th>Hex</th></tr>
+<tr><td>0</td><td>abcdef</td><td>0011 1111</td><td><b>0x3F</b></td></tr>
+<tr><td>1</td><td>bc</td><td>0000 0110</td><td><b>0x06</b></td></tr>
+<tr><td>2</td><td>abdeg</td><td>0101 1011</td><td><b>0x5B</b></td></tr>
+<tr><td>3</td><td>abcdg</td><td>0100 1111</td><td><b>0x4F</b></td></tr>
+<tr><td>4</td><td>bcfg</td><td>0110 0110</td><td><b>0x66</b></td></tr>
+<tr><td>5</td><td>acdfg</td><td>0110 1101</td><td><b>0x6D</b></td></tr>
+<tr><td>6</td><td>acdefg</td><td>0111 1101</td><td><b>0x7D</b></td></tr>
+<tr><td>7</td><td>abc</td><td>0000 0111</td><td><b>0x07</b></td></tr>
+<tr><td>8</td><td>abcdefg</td><td>0111 1111</td><td><b>0x7F</b></td></tr>
+<tr><td>9</td><td>abcdfg</td><td>0110 1111</td><td><b>0x6F</b></td></tr></table></div>
+<div class="code">; ---- Convierte el dígito de W en su patrón de 7 segmentos
+Siete   andlw   0x0F        ; por seguridad, sólo 0-15
+        addwf   PCL,1       ; PC ← PC + W  (salta W posiciones)
+        retlw   0x3F        ; 0
+        retlw   0x06        ; 1
+        retlw   0x5B        ; 2
+        retlw   0x4F        ; 3
+        retlw   0x66        ; 4
+        retlw   0x6D        ; 5
+        retlw   0x7D        ; 6
+        retlw   0x07        ; 7
+        retlw   0x7F        ; 8
+        retlw   0x6F        ; 9</div>
+<p><b>Cómo funciona.</b> <code>addwf PCL,1</code> suma W al contador de programa, de modo que la ejecución <b>salta hacia adelante</b> tantas instrucciones como vale W y cae sobre el <code>retlw</code> correspondiente, que devuelve la constante en W. Es la manera de implementar un vector de constantes en una máquina que no tiene memoria de datos en la zona de programa.</p>
+<p><b>2) El programa.</b></p>
+<div class="code">DIGITO  equ     0x0C
+VECES   equ     0x0D
+VAR     equ     0x0E
+VAR1    equ     0x0F
+
+        org     0x00
+        goto    Inicio
+
+        org     0x10            ; la tabla, lejos del vector 0x04
+Siete   addwf   PCL,1
+        retlw   0x3F
+        ... (como arriba)
+
+Inicio  bsf     STATUS,RP0
+        clrf    TRISB           ; PORTB todo salidas
+        bcf     STATUS,RP0
+
+Cuenta  clrf    DIGITO
+Otro    movf    DIGITO,0        ; W ← DIGITO
+        call    Siete           ; W ← patrón
+        movwf   PORTB           ; al display
+        call    Delay500        ; medio segundo
+        incf    DIGITO,1
+        movlw   d'10'
+        subwf   DIGITO,0        ; W ← DIGITO − 10
+        btfss   STATUS,Z        ; ¿ya vale 10?
+        goto    Otro            ; no: siguiente dígito
+        goto    Cuenta          ; sí: vuelve a empezar</div>
+<p><b>Los tres puntos que decide el corrector:</b></p>
+<ol>
+<li>La tabla se coloca con un <code>org</code> propio y <b>después</b> del vector de interrupción, nunca encima de la dirección 0x04.</li>
+<li>La comparación se hace <b>restando</b> y mirando la bandera Z, porque no existe «salta si igual».</li>
+<li><code>btfss STATUS,Z</code> se salta el <code>goto Otro</code> cuando Z vale 1, es decir, cuando DIGITO ha llegado a 10.</li>
+</ol>
+<div class="box key"><p>Si el display fuese de <b>ánodo común</b>, los segmentos se encienden con un <b>0</b> y hay que invertir todos los patrones: el 0 pasa de 0x3F a 0xC0. Es la primera pregunta que suele hacerse en la corrección, así que conviene indicar en un comentario qué tipo de display se está suponiendo.</p></div></div></details></div>
+<h3 id="t2-auto">Autoevaluación</h3>
+<p class="muted">Responde antes de desplegar.</p><details class="paso"><summary><span class="pn">1</span>¿Qué significa el bit de destino <code>d</code>?</summary><div class="inner"><p>Dónde se guarda el resultado: <code>d=0</code> en W, <code>d=1</code> en el propio registro.</p></div></details><details class="paso"><summary><span class="pn">2</span>¿Qué hace exactamente <code>btfsc f,b</code>?</summary><div class="inner"><p>Se <b>salta la instrucción siguiente</b> si el bit vale 0. No salta a ninguna etiqueta.</p></div></details><details class="paso"><summary><span class="pn">3</span>¿Cómo se compara si dos valores son iguales?</summary><div class="inner"><p>Restando con <code>subwf</code> y comprobando la bandera <b>Z</b>; no existe instrucción de comparación.</p></div></details><details class="paso"><summary><span class="pn">4</span>¿Qué calcula <code>subwf f,d</code>?</summary><div class="inner"><p><b>f − W</b>, no al revés.</p></div></details><details class="paso"><summary><span class="pn">5</span>¿Para qué sirve <code>retlw</code>?</summary><div class="inner"><p>Para volver de una subrutina devolviendo una constante en W: es la base de las <b>tablas</b> con <code>addwf PCL,1</code>.</p></div></details><details class="paso"><summary><span class="pn">6</span>¿Qué pasa si el perro guardián queda activado sin querer?</summary><div class="inner"><p>El programa se <b>reinicia solo</b> cada pocos milisegundos. Se desactiva en la palabra <code>__config</code>.</p></div></details><details class="paso"><summary><span class="pn">7</span>¿Dónde se colocan el vector de reset y el de interrupción?</summary><div class="inner"><p>En las direcciones <b>0x00</b> y <b>0x04</b> de la memoria de programa.</p></div></details>
+</section>
+<nav class="pager" aria-label="Páginas"><a href="tema-01.html"><small>← Anterior</small>T1 · El microcontrolador PIC16F84A</a><a class="nx" href="tema-03.html"><small>Siguiente →</small>T3 · Operaciones aritméticas y lógicas: comparaciones y máscaras</a></nav>
+<p class="inicio" style="margin:36px 0 8px;text-align:center;font-size:13px;color:var(--muted)">Guía no oficial de Sistemas basados en Microprocesador (UPCT, GIEyA) · Datos tomados del curso <time datetime="2020-09">2020/21</time> (apuntes de la asignatura, programas de teoría comentados, ejercicios de entrega y la práctica final del ascensor) · página creada en noviembre de 2026</p>
+</main>
+</div>
+<script src="app.js"></script>
+<script src="sims.js"></script>
+</body>
+</html>

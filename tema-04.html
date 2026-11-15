@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>T4 Gestión del tiempo por cuenta de instrucciones · Sistemas basados en Microprocesador · Guía para aprobar</title>
+<meta name="description" content="Sistemas basados en Microprocesador (UPCT, GIEyA): tema 4, Gestión del tiempo por cuenta de instrucciones">
+<meta name="theme-color" content="#1f3c88">
+<link href="https://fonts.googleapis.com" rel="preconnect"><link crossorigin href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Sans:ital,wght@0,400;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script>window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},svg:{fontCache:'global'}};</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+<link rel="stylesheet" href="style.css">
+<style>html{-webkit-text-size-adjust:100%}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+</head>
+<body>
+<div class="hub-bar" style="max-width:1180px;margin:0 auto;padding:10px 16px 0"><a href="https://helionacon-ui.github.io/GIEIA-UPCT/" style="display:inline-flex;align-items:center;gap:6px;font:600 13.5px/1 system-ui,sans-serif;padding:8px 12px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--fg);text-decoration:none">← Todas las guías GIEyA</a><p class="fecha" style="margin:6px 0 0;max-width:none;font:13px/1.45 system-ui,sans-serif;color:var(--muted)">Datos tomados del curso <time datetime="2020-09">2020/21</time> (apuntes de la asignatura, programas de teoría comentados, ejercicios de entrega y la práctica final del ascensor) · página creada en noviembre de 2026</p></div>
+<div class="crumb"><a href="index.html">Sistemas basados en Microprocesador</a><span class="sep">›</span><span>El microcontrolador y su programación</span><span class="sep">›</span><span>T4 · Gestión del tiempo por cuenta de instrucciones</span></div><a href="#top" class="totop" id="totop" aria-label="Volver arriba">↑</a>
+<div class="wrap" id="top">
+<nav aria-label="Índice" class="toc"><a href="index.html" style="--tc:var(--c0)">Portada</a><div class="grp">Empezar</div><a href="index.html#cero" style="--tc:var(--c0)">Empieza aquí desde cero</a><a href="plan.html" style="--tc:var(--c0)">Cómo es la evaluación</a><a href="index.html#progreso" style="--tc:var(--c0)">Tu progreso</a><div class="grp">El microcontrolador y su programación</div><a href="tema-01.html" style="--tc:var(--c2)">T1 El microcontrolador PIC16F84A</a><a href="tema-02.html" style="--tc:var(--c3)">T2 El repertorio de instrucciones y la estructura de un programa</a><a href="tema-03.html" style="--tc:var(--c4)">T3 Operaciones aritméticas y lógicas: comparaciones y máscaras</a><a href="tema-04.html" style="--tc:var(--c5)" class="on" aria-current="page">T4 Gestión del tiempo por cuenta de instrucciones</a><a href="tema-05.html" style="--tc:var(--c6)">T5 El temporizador TMR0 y el divisor de frecuencias</a><div class="grp">Recursos y aplicaciones</div><a href="tema-06.html" style="--tc:var(--c7)">T6 Puertas de entrada y salida</a><a href="tema-07.html" style="--tc:var(--c8)">T7 Periféricos: displays, teclados y actuadores</a><a href="tema-08.html" style="--tc:var(--c1)">T8 Interrupciones</a><a href="tema-09.html" style="--tc:var(--c2)">T9 La memoria EEPROM de datos</a><div class="grp">Practicar</div><a href="cuestiones.html" style="--tc:var(--c8)">Cuestiones de teoría respondidas</a><a href="examenes.html" style="--tc:var(--c8)">Problemas de examen resueltos</a><a href="problemas.html" style="--tc:var(--c8)">Qué cae en el examen</a><a href="laboratorio.html" style="--tc:var(--c7)">Prácticas y herramientas</a><a href="formulario.html" style="--tc:var(--c8)">Formulario</a></nav>
+<main>
+<section class="sec tema" style="--tc:var(--c5);--tcs:var(--c5s)">
+<div class="sh"><span aria-hidden="true" class="badge">4</span><div class="shx"><p class="kick">El microcontrolador y su programación · Tema 4</p><h2 id="t4">Gestión del tiempo por cuenta de instrucciones</h2><div class="tags"><span class="tag">El microcontrolador y su programación</span><span class="tag">Tiempo</span></div></div></div>
+<div class="zero"><p class="ft">Desde cero</p><p><b>Objetivo:</b> calcular con exactitud el tiempo de ejecución de un fragmento de código y diseñar subrutinas de retardo de la duración pedida.</p><ul>
+<li>La primera forma de medir tiempo en un PIC no necesita ningún periférico: basta con <b>contar instrucciones</b>. Como casi todas duran exactamente un ciclo y el ciclo dura \(4/F_{osc}\), el tiempo de un trozo de código se conoce con total exactitud.</li>
+<li>La regla es simple: <b>un ciclo</b> casi todas, <b>dos ciclos</b> las que rompen la secuencia (GOTO, CALL, RETURN, RETFIE) y las condicionales <b>cuando saltan</b>.</li>
+<li>El bucle de retardo canónico es <code>decfsz VAR,1</code> seguido de <code>goto</code>. Mientras la variable no llega a cero, cada vuelta cuesta <b>3 ciclos</b> (1 del <code>decfsz</code> + 2 del <code>goto</code>); en la última vuelta, el <code>decfsz</code> salta y cuesta <b>2 ciclos</b>, sin <code>goto</code>.</li>
+<li>Un bucle con una variable de 8 bits llega como mucho a 256 vueltas, es decir, menos de 1 ms a 4 MHz. Para tiempos mayores se <b>anidan</b> bucles: uno dentro de otro multiplica las cuentas.</li>
+<li>El cálculo exacto importa menos de lo que parece: con dos bucles anidados se consiguen 50,006 ms cuando se buscaban 50, y ese 0,012 % de error es irrelevante en casi cualquier aplicación. Lo que sí importa es saber <b>razonar</b> la cuenta.</li>
+<li>La gran ventaja de este método es que no consume ningún recurso. La gran desventaja es que el microcontrolador <b>no hace nada más</b> mientras espera: es una espera <b>activa</b>. Para eso están el TMR0 del tema siguiente y las interrupciones del tema 8.</li>
+<li>Para ajustar un tiempo al ciclo exacto se añaden instrucciones <code>nop</code>, que cuestan un ciclo y no hacen nada. Es la forma habitual de cuadrar protocolos que exigen temporización precisa.</li>
+</ul></div>
+<details class="nom"><summary><span aria-hidden="true" class="nom-ic">Aa</span>Nomenclatura del tema 4 <span class="src">8 entradas</span></summary><div class="inner">
+<div class="tw"><table><tr><th>Símbolo</th><th>Significado</th><th>Unidad · nota</th></tr><tr><td class="sym">CI</td><td>ciclo de instrucción</td><td class="u">4/Fosc</td></tr><tr><td class="sym">1 µs</td><td>a 4 MHz</td><td class="u"></td></tr><tr><td class="sym">3 CI</td><td>vuelta del bucle</td><td class="u">decfsz+goto</td></tr><tr><td class="sym">n − 1</td><td>vueltas completas</td><td class="u"></td></tr><tr><td class="sym">3n+3</td><td>bucle simple con return</td><td class="u"></td></tr><tr><td class="sym">3n+4</td><td>bloque interior anidado</td><td class="u"></td></tr><tr><td class="sym">nop</td><td>1 ciclo sin efecto</td><td class="u">ajuste fino</td></tr><tr><td class="sym">espera activa</td><td>el micro no hace nada más</td><td class="u"></td></tr></table></div></div></details>
+<figure class="fig"><p class="ft">Calculadora interactiva - cuenta de ciclos de un bucle de retardo</p><div data-sim="ciclos"></div><figcaption>Mueve los controles y observa cómo cambia el resultado: es el mismo cálculo que hay que saber hacer a mano en el examen.</figcaption></figure>
+<h3 id="t4-formulas">Fórmulas y conceptos que hay que saber</h3>
+<div class="box key"><ul><li><b>Base de todo:</b></li></ul>
+\[T_{CI}=\frac{4}{F_{osc}}\qquad\Longrightarrow\qquad t=N_{CI}\cdot T_{CI}\]
+<ul><li><b>Bucle simple</b> con una variable cargada a \(n\):</li></ul>
+<div class="code">        movlw   d'n'        ; 1 CI
+        movwf   VAR         ; 1 CI
+Atras   decfsz  VAR,1       ; 1 CI (2 en la última vuelta)
+        goto    Atras       ; 2 CI (no se ejecuta la última)
+        return              ; 2 CI</div>
+\[N=1+1+3(n-1)+2+2=3n+3\ \text{CI}\]
+<ul><li>Con \(n=82\): \(N=3\cdot82+3=249\) CI, es decir <b>249 µs</b> a 4 MHz. Es la rutina <code>Delay</code> de referencia de la asignatura.</li>
+<li><b>Dos bucles anidados</b>, el interior con \(n\) y el exterior con \(m\):</li></ul>
+<div class="code">Delay   movlw   d'm'        ; 1 CI
+        movwf   VAR1        ; 1 CI
+Atras1  movlw   d'n'        ; 1 CI   \
+        movwf   VAR         ; 1 CI    |
+Atras   decfsz  VAR,1       ; 1/2 CI  |  bucle interior
+        goto    Atras       ; 2 CI    |  = 3n + 1 CI
+        decfsz  VAR1,1      ; 1/2 CI  |
+        goto    Atras1      ; 2 CI   /
+        return              ; 2 CI</div>
+\[N_{\text{interior}}=1+1+3(n-1)+2+1+2=3n+4\ \text{CI}\]
+\[N_{\text{total}}=1+1+(3n+4)\,m+2+2\ \text{CI}\]
+<ul><li>Con \(n=82\) y \(m=200\): \(N=2+250\cdot200+4=50\,006\) CI = <b>50,006 ms</b>. Es la rutina <code>Delay50</code>.</li>
+<li><b>Tiempos máximos</b> a 4 MHz: un bucle, 0,77 ms · dos bucles, 196 ms · tres bucles, 50 s.</li>
+<li><b>Para un tiempo objetivo \(t\):</b></li></ul>
+\[N_{CI}=\frac{t}{T_{CI}},\qquad m\approx\frac{N_{CI}}{3n+4}\]
+<ul><li>Se elige \(n\) cómodo (por ejemplo el que dé un bucle interior redondo) y se despeja \(m\), redondeando al entero más próximo.</li></ul></div>
+<h3 id="t4-metodo">Método paso a paso</h3>
+<ol class="steps">
+<li><b>Comenta cada línea</b> con sus ciclos. Es la forma de no perderse.</li>
+<li><b>Separa</b> lo que se ejecuta una sola vez (la carga inicial y el retorno) de lo que está dentro del bucle.</li>
+<li><b>Cuenta las vueltas completas:</b> con la variable cargada a \(n\), el bucle se recorre entero \(n-1\) veces y la última cuesta un ciclo más y no lleva <code>goto</code>.</li>
+<li><b>Para anidar:</b> calcula primero el bucle interior completo y trátalo como un bloque que se repite \(m\) veces.</li>
+<li><b>Para diseñar un retardo:</b> divide el tiempo pedido entre \(T_{CI}\), elige \(n\) y despeja \(m\).</li>
+<li><b>Comprueba con el <i>Stopwatch</i></b> de MPLAB: da el número exacto de ciclos y detecta cualquier error de cuenta.</li>
+</ol>
+<div class="box trap"><h4>Trampas típicas</h4><ul>
+<li>Contar \(n\) vueltas completas en vez de \(n-1\).</li>
+<li>Olvidar que el <code>decfsz</code> de la última vuelta cuesta <b>2 ciclos</b> y que entonces <b>no</b> se ejecuta el <code>goto</code>.</li>
+<li>Incluir el <code>goto</code> de la última vuelta en la cuenta.</li>
+<li>Olvidar los 2 ciclos del <code>call</code> desde el programa principal, si el enunciado pide el tiempo total.</li>
+<li>Cargar 0 en la variable creyendo que el bucle no se ejecuta: con 0, el <code>decfsz</code> lo deja en 255 y da <b>256 vueltas</b>.</li>
+<li>Usar espera activa en un programa que además tiene que atender entradas. Ahí hace falta TMR0 o interrupciones.</li>
+</ul></div>
+<h3 id="t4-problema">Problema resuelto</h3>
+<div class="prob"><div class="enun"><p class="et">Enunciado</p><p>Para un PIC16F84A a 4 MHz, diseña una subrutina <code>Delay50</code> que produzca un retardo de <b>50 ms</b> por cuenta de instrucciones, y después un programa que haga parpadear un LED en PORTB con periodo de <b>1 segundo</b> (medio encendido, medio apagado).</p></div>
+<details class="paso"><summary><span class="pn">✓</span>Ver solución paso a paso</summary><div class="inner"><p><b>1) La subrutina de 50 ms.</b> Partimos de la rutina base de 249 µs (\(n=82\)) y la metemos en un bucle exterior:</p>
+\[\text{vueltas}\approx\frac{50\,000\ \mu\text{s}}{249\ \mu\text{s}}=200{,}8\approx200\]
+<div class="code">Delay50 movlw   d'200'      ; 1 CI
+        movwf   VAR1        ; 1 CI
+Atras1  movlw   d'82'       ; 1 CI    \
+        movwf   VAR         ; 1 CI     |
+Atras   decfsz  VAR,1       ; 1/2 CI   |  250 CI
+        goto    Atras       ; 2 CI     |
+        decfsz  VAR1,1      ; 1/2 CI   |
+        goto    Atras1      ; 2 CI    /
+        return              ; 2 CI</div>
+<p><b>Cuenta exacta.</b> El bloque interior, contando el <code>decfsz VAR1</code> y el <code>goto Atras1</code> que lo cierran:</p>
+\[1+1+3\cdot81+2+1+2=1+1+243+2+1+2=250\ \text{CI}\]
+<p>Ese bloque se repite 200 veces, y hay que añadir la carga inicial y el cierre:</p>
+\[N=\underbrace{1+1}_{\text{carga}}+\underbrace{250\cdot200}_{\text{bucles}}+\underbrace{2}_{\texttt{decfsz}\ \text{final}}+\underbrace{2}_{\texttt{return}}=\boxed{50\,006\ \text{CI}}\]
+<p>A 4 MHz, \(50\,006\ \mu\text{s}=\boxed{50{,}006\ \text{ms}}\): un error del <b>0,012 %</b>, totalmente despreciable.</p>
+<p><b>2) El parpadeo de 1 segundo.</b> Medio periodo son 500 ms, es decir, <b>diez</b> llamadas a <code>Delay50</code>:</p>
+<div class="code">VALOR   equ     0x0C
+VECES   equ     0x0D
+VAR     equ     0x0E
+VAR1    equ     0x0F
+
+        org     0x00
+        goto    Inicio
+
+Inicio  bsf     STATUS,RP0
+        clrf    TRISB           ; PORTB todo salidas
+        bcf     STATUS,RP0
+        clrf    VALOR
+        movwf   PORTB
+
+Bucle   call    Delay500        ; medio segundo
+        comf    VALOR,1         ; invierte los 8 bits
+        movf    VALOR,0
+        movwf   PORTB           ; 0x00 ↔ 0xFF
+        goto    Bucle
+
+; ---- 500 ms = 10 × 50 ms
+Delay500
+        movlw   d'10'
+        movwf   VECES
+Otra    call    Delay50
+        decfsz  VECES,1
+        goto    Otra
+        return</div>
+<p><b>Tiempo real del medio periodo:</b></p>
+\[t=10\cdot50{,}006\ \text{ms}+\text{(sobrecarga del bucle exterior)}\approx500{,}1\ \text{ms}\]
+<p>El periodo completo es de unos <b>1,0002 s</b>: a efectos prácticos, exacto.</p>
+<p><b>Si hiciera falta mayor precisión</b>, se ajusta a base de <code>nop</code>. Para que el medio periodo fuese exactamente 500 000 CI habría que quitar 100 ciclos, por ejemplo bajando el bucle exterior a 199 vueltas y compensando con un bucle corto. Pero en la práctica, para un parpadeo, nadie hace eso: si la precisión importa de verdad, se usa el <b>TMR0</b> del tema siguiente o un cristal con oscilador externo.</p>
+<div class="box key"><p>La cuenta que hay que saber razonar en el examen es la del bloque interior: <b>1+1+3(n−1)+2</b> para el bucle propiamente dicho, más <b>1+2</b> del <code>decfsz</code>/<code>goto</code> exteriores. Equivocarse en el <code>(n−1)</code> o en los dos ciclos de la última vuelta es el error que más se repite.</p></div></div></details></div>
+<h3 id="t4-auto">Autoevaluación</h3>
+<p class="muted">Responde antes de desplegar.</p><details class="paso"><summary><span class="pn">1</span>¿Cuántos ciclos cuesta una vuelta completa del bucle <code>decfsz</code>+<code>goto</code>?</summary><div class="inner"><p><b>3 ciclos</b>: 1 del <code>decfsz</code> y 2 del <code>goto</code>.</p></div></details><details class="paso"><summary><span class="pn">2</span>¿Y la última vuelta?</summary><div class="inner"><p><b>2 ciclos</b>: el <code>decfsz</code> salta (cuesta 2) y el <code>goto</code> no se ejecuta.</p></div></details><details class="paso"><summary><span class="pn">3</span>¿Cuántas vueltas completas da un bucle con la variable cargada a n?</summary><div class="inner"><p><b>n − 1</b> vueltas completas, más la última en la que sale.</p></div></details><details class="paso"><summary><span class="pn">4</span>¿Qué pasa si se carga 0 en la variable del bucle?</summary><div class="inner"><p>El <code>decfsz</code> la deja en 255 y el bucle da <b>256</b> vueltas, no ninguna.</p></div></details><details class="paso"><summary><span class="pn">5</span>¿Qué tiempo máximo se consigue con un solo bucle a 4 MHz?</summary><div class="inner"><p>Unos <b>0,77 ms</b> (3·256+3 ciclos). Para más hay que anidar.</p></div></details><details class="paso"><summary><span class="pn">6</span>¿Cuál es la desventaja de la espera activa?</summary><div class="inner"><p>Que el microcontrolador <b>no puede hacer nada más</b> mientras espera.</p></div></details><details class="paso"><summary><span class="pn">7</span>¿Para qué sirve <code>nop</code>?</summary><div class="inner"><p>Para añadir exactamente un ciclo y ajustar temporizaciones precisas.</p></div></details>
+</section>
+<nav class="pager" aria-label="Páginas"><a href="tema-03.html"><small>← Anterior</small>T3 · Operaciones aritméticas y lógicas: comparaciones y máscaras</a><a class="nx" href="tema-05.html"><small>Siguiente →</small>T5 · El temporizador TMR0 y el divisor de frecuencias</a></nav>
+<p class="inicio" style="margin:36px 0 8px;text-align:center;font-size:13px;color:var(--muted)">Guía no oficial de Sistemas basados en Microprocesador (UPCT, GIEyA) · Datos tomados del curso <time datetime="2020-09">2020/21</time> (apuntes de la asignatura, programas de teoría comentados, ejercicios de entrega y la práctica final del ascensor) · página creada en noviembre de 2026</p>
+</main>
+</div>
+<script src="app.js"></script>
+<script src="sims.js"></script>
+</body>
+</html>

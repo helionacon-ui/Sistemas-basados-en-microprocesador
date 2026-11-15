@@ -1,0 +1,254 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Problemas resueltos · Sistemas basados en Microprocesador · Guía para aprobar</title>
+<meta name="description" content="Ejercicios de examen de Sistemas basados en Microprocesador (UPCT) resueltos con código en ensamblador">
+<meta name="theme-color" content="#1f3c88">
+<link href="https://fonts.googleapis.com" rel="preconnect"><link crossorigin href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Sans:ital,wght@0,400;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script>window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},svg:{fontCache:'global'}};</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+<link rel="stylesheet" href="style.css">
+<style>html{-webkit-text-size-adjust:100%}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+</head>
+<body>
+<div class="hub-bar" style="max-width:1180px;margin:0 auto;padding:10px 16px 0"><a href="https://helionacon-ui.github.io/GIEIA-UPCT/" style="display:inline-flex;align-items:center;gap:6px;font:600 13.5px/1 system-ui,sans-serif;padding:8px 12px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--fg);text-decoration:none">← Todas las guías GIEyA</a><p class="fecha" style="margin:6px 0 0;max-width:none;font:13px/1.45 system-ui,sans-serif;color:var(--muted)">Datos tomados del curso <time datetime="2020-09">2020/21</time> (apuntes de la asignatura, programas de teoría comentados, ejercicios de entrega y la práctica final del ascensor) · página creada en noviembre de 2026</p></div>
+<div class="crumb"><a href="index.html">Sistemas basados en Microprocesador</a><span class="sep">›</span><span>Practicar</span><span class="sep">›</span><span>Problemas</span></div><a href="#top" class="totop" id="totop" aria-label="Volver arriba">↑</a>
+<div class="wrap" id="top">
+<nav aria-label="Índice" class="toc"><a href="index.html" style="--tc:var(--c0)">Portada</a><div class="grp">Empezar</div><a href="index.html#cero" style="--tc:var(--c0)">Empieza aquí desde cero</a><a href="plan.html" style="--tc:var(--c0)">Cómo es la evaluación</a><a href="index.html#progreso" style="--tc:var(--c0)">Tu progreso</a><div class="grp">El microcontrolador y su programación</div><a href="tema-01.html" style="--tc:var(--c2)">T1 El microcontrolador PIC16F84A</a><a href="tema-02.html" style="--tc:var(--c3)">T2 El repertorio de instrucciones y la estructura de un programa</a><a href="tema-03.html" style="--tc:var(--c4)">T3 Operaciones aritméticas y lógicas: comparaciones y máscaras</a><a href="tema-04.html" style="--tc:var(--c5)">T4 Gestión del tiempo por cuenta de instrucciones</a><a href="tema-05.html" style="--tc:var(--c6)">T5 El temporizador TMR0 y el divisor de frecuencias</a><div class="grp">Recursos y aplicaciones</div><a href="tema-06.html" style="--tc:var(--c7)">T6 Puertas de entrada y salida</a><a href="tema-07.html" style="--tc:var(--c8)">T7 Periféricos: displays, teclados y actuadores</a><a href="tema-08.html" style="--tc:var(--c1)">T8 Interrupciones</a><a href="tema-09.html" style="--tc:var(--c2)">T9 La memoria EEPROM de datos</a><div class="grp">Practicar</div><a href="cuestiones.html" style="--tc:var(--c8)">Cuestiones de teoría respondidas</a><a href="examenes.html" style="--tc:var(--c8)" class="on" aria-current="page">Problemas de examen resueltos</a><a href="problemas.html" style="--tc:var(--c8)">Qué cae en el examen</a><a href="laboratorio.html" style="--tc:var(--c7)">Prácticas y herramientas</a><a href="formulario.html" style="--tc:var(--c8)">Formulario</a></nav>
+<main>
+<section class="sec" style="--tc:var(--c8);--tcs:var(--c8s)"><div class="sh"><span aria-hidden="true" class="badge">Ex</span><div class="shx"><p class="kick">Practicar · Problemas</p><h2 id="exam">Los ejercicios del examen, resueltos</h2><div class="tags"><span class="tag">8 ejercicios tipo</span><span class="tag w">con código completo</span></div></div></div>
+<div class="zero"><p class="ft">Cómo usarlos</p><p>Los exámenes repiten un puñado de tipos: cuenta de ciclos, TMR0, puertos, tablas e interrupciones. Estos ocho los cubren. <b>Escribe el código a mano</b> antes de abrir la solución: leerlo no sirve de nada.</p></div><div class="prob"><h3 class="ph" id="ex1">Problema 1 · Subrutina de retardo por cuenta de instrucciones <span class="tag">tipo</span> <a class="tag" href="tema-04.html">T4</a></h3><div class="enun"><p class="et">Enunciado</p>Para un PIC16F84A a 4 MHz, diseña una subrutina que produzca un retardo de <b>50 ms</b> por cuenta de instrucciones. Calcula el número exacto de ciclos y el error cometido.</div><details class="paso"><summary><span class="pn">✓</span>Solución completa</summary><div class="inner"><p>Partimos de la rutina base de 249 µs (un bucle con la variable cargada a 82) y la metemos en un bucle exterior de 200 vueltas.</p>
+<div class="code">Delay50 movlw   d'200'      ; 1 CI
+        movwf   VAR1        ; 1 CI
+Atras1  movlw   d'82'       ; 1 CI    \
+        movwf   VAR         ; 1 CI     |
+Atras   decfsz  VAR,1       ; 1/2 CI   |  bloque de 250 CI
+        goto    Atras       ; 2 CI     |
+        decfsz  VAR1,1      ; 1/2 CI   |
+        goto    Atras1      ; 2 CI    /
+        return              ; 2 CI</div>
+<p><b>Bloque interior</b> (incluyendo el <code>decfsz VAR1</code> y el <code>goto Atras1</code> que lo cierran):</p>
+\[1+1+3\cdot81+2+1+2=250\ \text{CI}\]
+<p>El 3·81 sale de que el bucle interior se recorre <b>81 veces completas</b> (de 82 a 1) a 3 ciclos cada una, y el «+2» de la última vuelta en la que el <code>decfsz</code> salta.</p>
+<p><b>Total:</b></p>
+\[N=1+1+250\cdot200+2+2=\boxed{50\,006\ \text{CI}}\]
+<p>A 4 MHz cada ciclo dura 1 µs, así que el retardo es de <b>50,006 ms</b>: un error de +6 µs, el <b>0,012 %</b>.</p>
+<p><b>Para otros tiempos</b> basta cambiar el valor del bucle exterior: 100 vueltas dan 25 ms, 20 vueltas dan 5 ms. Para un segundo hacen falta tres bucles anidados o llamar 20 veces a esta subrutina.</p>
+<div class="box key"><p>Los dos errores que más se repiten: contar <b>n</b> vueltas en vez de <b>n−1</b>, y olvidar que en la última el <code>decfsz</code> cuesta 2 ciclos y el <code>goto</code> <b>no se ejecuta</b>.</p></div></div></details></div><div class="prob"><h3 class="ph" id="ex2">Problema 2 · Onda cuadrada de 10 Hz con el TMR0 <span class="tag">tipo</span> <a class="tag" href="tema-05.html">T5</a></h3><div class="enun"><p class="et">Enunciado</p>Un PIC16F84A a 4 MHz debe generar en RB0 una onda cuadrada de <b>10 Hz</b> usando el TMR0. Calcula el preescalador y el valor de precarga, escribe el código y estima el error.</div><details class="paso"><summary><span class="pn">✓</span>Solución completa</summary><div class="inner"><p><b>1) Cálculo.</b> Periodo 100 ms → conmutar cada <b>50 ms</b>. El máximo de un desbordamiento es \(T_{CI}\cdot256\cdot DF\):</p>
+<div class="tw"><table><tr><th>DF</th><th>1</th><th>16</th><th>64</th><th>128</th><th><b>256</b></th></tr>
+<tr><td>máximo</td><td>256 µs</td><td>4,1 ms</td><td>16,4 ms</td><td>32,8 ms</td><td><b>65,5 ms</b></td></tr></table></div>
+<p>Sólo DF = 256 llega a 50 ms. Cada cuenta dura 256 µs:</p>
+\[n=256-\frac{50\,000}{256}=256-195{,}31=60{,}69\]
+<p>Probamos los dos enteros: \(n=61\) da \(195\cdot256=49\,920\) µs (−80 µs) y \(n=60\) da \(196\cdot256=50\,176\) µs (+176 µs). Elegimos <b>n = 61</b>.</p>
+<p><b>2) Código.</b></p>
+<div class="code">Inicio  bsf     STATUS,RP0
+        bcf     TRISB,0         ; RB0 salida
+        movlw   b'00000111'     ; T0CS=0, PSA=0, PS=111 (1:256)
+        movwf   OPTION_REG
+        bcf     STATUS,RP0
+        bcf     PORTB,0
+
+Bucle   movlw   d'61'
+        movwf   TMR0            ; precarga
+        bcf     INTCON,T0IF     ; borra el aviso
+Espera  btfss   INTCON,T0IF
+        goto    Espera          ; aún no se ha desbordado
+        movlw   b'00000001'
+        xorwf   PORTB,1         ; conmuta RB0
+        goto    Bucle</div>
+<p><b>3) Error.</b> El periodo real es \(2\cdot49{,}92=99{,}84\) ms, es decir <b>10,016 Hz</b>: un <b>0,16 %</b>. Para un LED es irrelevante; para una base de tiempos acumularía <b>2,3 minutos al día</b>.</p>
+<p>Tres formas de mejorarlo: añadir un bucle de compensación de 80 µs, bajar el preescalador y contar varios desbordamientos, o usar un cristal de 4,194304 MHz con el que los números salen exactos.</p></div></details></div><div class="prob"><h3 class="ph" id="ex3">Problema 3 · Contador de 0 a 99 con displays multiplexados <span class="tag">tipo</span> <a class="tag" href="tema-07.html">T7</a></h3><div class="enun"><p class="et">Enunciado</p>Diseña un contador de 0 a 99 con dos displays de siete segmentos multiplexados y dos pulsadores (incrementar y poner a cero). Asigna patillas, calcula el tiempo de barrido y escribe la lógica.</div><details class="paso"><summary><span class="pn">✓</span>Solución completa</summary><div class="inner"><p><b>1) Patillas.</b> RB0–RB6 segmentos (compartidos), RB7 habilitación de decenas, RA0 habilitación de unidades, RA1 y RA2 pulsadores con <i>pull-up</i>. Los comunes de los displays van a masa a través de un transistor NPN, para no superar los 25 mA de una patilla.</p>
+<p><b>2) Tiempo de barrido.</b> Con 2 dígitos y 100 Hz de refresco:</p>
+\[t_{\text{dígito}}=\frac{1}{2\cdot100}=5\ \text{ms}\ \Rightarrow\ n=256-\frac{5000}{256}=236{,}5\to236\ (5{,}12\ \text{ms})\]
+<p><b>3) El barrido.</b></p>
+<div class="code">Barrido bcf     PORTB,7         ; apaga AMBOS antes de cambiar
+        bcf     PORTA,0
+        movf    DECENAS,0
+        call    Siete
+        andlw   b'01111111'
+        movwf   PORTB
+        bsf     PORTB,7         ; enciende decenas
+        call    Delay5ms
+
+        bcf     PORTB,7
+        bcf     PORTA,0
+        movf    UNIDADES,0
+        call    Siete
+        andlw   b'01111111'
+        movwf   PORTB
+        bsf     PORTA,0         ; enciende unidades
+        call    Delay5ms
+        return</div>
+<p>Apagar los dos <b>antes</b> de cambiar el patrón evita el efecto fantasma: si no, durante unos microsegundos un dígito muestra el patrón del otro.</p>
+<p><b>4) Los pulsadores</b>, con antirrebote completo:</p>
+<div class="code">        btfsc   PORTA,1         ; ¿pulsado? (activo a 0)
+        goto    Cero
+        call    Delay20ms       ; antirrebote
+        btfsc   PORTA,1         ; ¿sigue pulsado?
+        goto    Cero            ; era un rebote
+Suelta  btfss   PORTA,1         ; espera a que se suelte
+        goto    Suelta
+        call    Delay20ms
+
+        incf    UNIDADES,1
+        movlw   d'10'
+        subwf   UNIDADES,0      ; ¿llegó a 10?
+        btfss   STATUS,Z
+        goto    Cero
+        clrf    UNIDADES
+        incf    DECENAS,1       ; acarreo a las decenas
+        movlw   d'10'
+        subwf   DECENAS,0
+        btfsc   STATUS,Z
+        clrf    DECENAS         ; de 99 a 00</div>
+<div class="box key"><p>El patrón del antirrebote es siempre el mismo: detectar, esperar 20 ms, <b>confirmar</b>, esperar a que se suelte y esperar otros 20 ms. Sin la confirmación hay pulsaciones falsas; sin la espera a que se suelte, una pulsación larga cuenta decenas de veces.</p></div></div></details></div><div class="prob"><h3 class="ph" id="ex4">Problema 4 · Interrupción del TMR0 y del pin INT <span class="tag">tipo</span> <a class="tag" href="tema-08.html">T8</a></h3><div class="enun"><p class="et">Enunciado</p>Diseña un sistema que, usando interrupciones, haga parpadear un LED en RB1 cada 500 ms mientras cuenta los pulsos que llegan por RB0/INT, sin que el programa principal tenga que esperar.</div><details class="paso"><summary><span class="pn">✓</span>Solución completa</summary><div class="inner"><p><b>1) Tiempo.</b> El máximo de un desbordamiento es 65,5 ms, menos que 500 ms: hay que <b>contar desbordamientos</b>. Con n = 61 y DF = 256 cada uno dura 49,92 ms, y <b>diez</b> dan 499,2 ms.</p>
+<p><b>2) Rutina de servicio.</b> Las dos fuentes comparten el vector 0x004, así que hay que distinguirlas.</p>
+<div class="code">        org     0x04
+        movwf   W_TMP           ; salva W
+        swapf   STATUS,0        ; swapf no toca banderas
+        movwf   S_TMP
+
+        btfss   INTCON,T0IF     ; ¿ha sido el TMR0?
+        goto    EsINT
+        movlw   d'61'
+        movwf   TMR0            ; recarga
+        bcf     INTCON,T0IF     ; BORRA EL AVISO
+        decfsz  VECES,1
+        goto    EsINT
+        movlw   d'10'
+        movwf   VECES
+        movlw   b'00000010'
+        xorwf   PORTB,1         ; conmuta RB1
+
+EsINT   btfss   INTCON,INTF     ; ¿ha sido el flanco externo?
+        goto    Salir
+        incf    PULSOS,1
+        bcf     INTCON,INTF     ; BORRA EL AVISO
+
+Salir   swapf   S_TMP,0
+        movwf   STATUS
+        swapf   W_TMP,1
+        swapf   W_TMP,0
+        retfie</div>
+<p><b>3) Inicialización.</b></p>
+<div class="code">        bsf     STATUS,RP0
+        movlw   b'00000001'
+        movwf   TRISB           ; RB0 entrada, resto salidas
+        movlw   b'01000111'     ; INTEDG=1, T0CS=0, PSA=0, PS=1:256
+        movwf   OPTION_REG
+        bcf     STATUS,RP0
+        bcf     INTCON,T0IF     ; borra avisos antiguos
+        bcf     INTCON,INTF
+        bsf     INTCON,T0IE     ; habilita fuentes
+        bsf     INTCON,INTE
+        bsf     INTCON,GIE      ; GIE el ÚLTIMO</div>
+<p><b>Los cuatro puntos que decide el corrector:</b> comprobar <b>las dos</b> fuentes (pueden coincidir), usar <code>swapf</code> y no <code>movf</code> para salvar STATUS, <b>borrar los bits F</b> y habilitar GIE en último lugar.</p>
+<div class="box key"><p>Si falta un <code>bcf INTCON,T0IF</code>, el síntoma es inconfundible: nada funciona y el micro parece muerto, porque está entrando en la interrupción miles de veces por segundo sin salir nunca del vector.</p></div></div></details></div><div class="prob"><h3 class="ph" id="ex5">Problema 5 · Lectura y escritura en la EEPROM <span class="tag">tipo</span> <a class="tag" href="tema-09.html">T9</a></h3><div class="enun"><p class="et">Enunciado</p>Escribe las rutinas de lectura y escritura de la EEPROM del PIC16F84A y diseña la lógica para que un contador que debe sobrevivir a los apagones no desgaste la memoria.</div><details class="paso"><summary><span class="pn">✓</span>Solución completa</summary><div class="inner"><p><b>1) Lectura.</b></p>
+<div class="code">LeeEE   bcf     STATUS,RP0
+        movwf   EEADR           ; dirección (venía en W)
+        bsf     STATUS,RP0
+        bsf     EECON1,RD       ; orden de lectura
+        bcf     STATUS,RP0
+        movf    EEDATA,0        ; W ← dato
+        return</div>
+<p><b>2) Escritura.</b> La secuencia es obligatoria y no admite cambios:</p>
+<div class="code">EscEE   bcf     STATUS,RP0
+        movf    DIR,0
+        movwf   EEADR
+        movf    VALOR,0
+        movwf   EEDATA
+
+        bsf     STATUS,RP0
+        bcf     INTCON,GIE          ; interrupciones fuera
+        bsf     EECON1,WREN         ; permiso
+
+        movlw   0x55                ; --- SECUENCIA OBLIGATORIA
+        movwf   EECON2
+        movlw   0xAA
+        movwf   EECON2
+        bsf     EECON1,WR           ; --- arranca (≈10 ms)
+
+EspEE   btfsc   EECON1,WR           ; el hardware lo borra al acabar
+        goto    EspEE
+
+        bcf     EECON1,WREN
+        bcf     EECON1,EEIF
+        bsf     INTCON,GIE
+        bcf     STATUS,RP0
+        return</div>
+<p><b>3) Evitar el desgaste.</b> El contador se lleva en <b>RAM</b> y sólo se vuelca a EEPROM cuando hace falta: al detectar un apagón inminente, tras unos segundos de inactividad, o cada N incrementos.</p>
+<p>Las cifras justifican el diseño. Con un millón de ciclos por celda:</p>
+\[\text{escribiendo cada 10 ms: }\frac{10^{6}}{86\,400/0{,}010}=0{,}116\ \text{días}=\boxed{2{,}8\ \text{horas}}\]
+\[\text{escribiendo 100 veces al día: }\frac{10^{6}}{100}=10\,000\ \text{días}=\boxed{27\ \text{años}}\]
+<p>Al arrancar conviene comprobar si la memoria está virgen: una EEPROM nueva contiene <b>0xFF</b> en todas sus posiciones, así que ese valor sirve de «no inicializado».</p></div></details></div><div class="prob"><h3 class="ph" id="ex6">Problema 6 · Tabla de siete segmentos con retlw <span class="tag">tipo</span> <a class="tag" href="tema-02.html">T2</a></h3><div class="enun"><p class="et">Enunciado</p>Escribe una subrutina que reciba en W un dígito del 0 al 9 y devuelva el patrón de segmentos para un display de cátodo común, y explica cómo funciona.</div><details class="paso"><summary><span class="pn">✓</span>Solución completa</summary><div class="inner"><div class="code">        org     0x10            ; con su propio org, lejos de 0x04
+Siete   andlw   0x0F            ; por seguridad
+        addwf   PCL,1           ; PC ← PC + W
+        retlw   0x3F            ; 0
+        retlw   0x06            ; 1
+        retlw   0x5B            ; 2
+        retlw   0x4F            ; 3
+        retlw   0x66            ; 4
+        retlw   0x6D            ; 5
+        retlw   0x7D            ; 6
+        retlw   0x07            ; 7
+        retlw   0x7F            ; 8
+        retlw   0x6F            ; 9</div>
+<p><b>Cómo funciona.</b> <code>addwf PCL,1</code> suma W al contador de programa, de modo que la ejecución <b>salta hacia adelante</b> tantas instrucciones como vale W y cae sobre el <code>retlw</code> correspondiente, que devuelve su constante en W y retorna. Es la forma de implementar un vector de constantes en una máquina sin acceso a la memoria de programa como datos.</p>
+<p><b>Los patrones</b> salen de encender los segmentos de cada dígito, con \(b_0=a\) hasta \(b_6=g\). Por ejemplo el 5 enciende a, c, d, f, g:</p>
+\[\text{gfedcba}=0110\,1101=\text{0x6D}\]
+<p><b>Para ánodo común</b> hay que <b>complementar</b> todos los valores: el 0 pasa de 0x3F a 0xC0, el 1 de 0x06 a 0xF9, etcétera.</p>
+<p><b>Las dos precauciones:</b> el <code>andlw 0x0F</code> evita que un valor fuera de rango salte a una zona de código cualquiera; y la tabla debe colocarse de forma que no <b>cruce el límite de 256 palabras</b>, porque <code>addwf PCL,1</code> sólo afecta a los ocho bits bajos del contador de programa.</p></div></details></div><div class="prob"><h3 class="ph" id="ex7">Problema 7 · Configuración de puertos y límites eléctricos <span class="tag">tipo</span> <a class="tag" href="tema-06.html">T6</a></h3><div class="enun"><p class="et">Enunciado</p>Un sistema tiene cuatro pulsadores en RA0–RA3, ocho LED en PORTB y un motor de 12 V y 300 mA controlado desde RA4. Configura los puertos, calcula las resistencias y explica cómo se conecta el motor.</div><details class="paso"><summary><span class="pn">✓</span>Solución completa</summary><div class="inner"><p><b>1) Configuración.</b></p>
+<div class="code">        bsf     STATUS,RP0
+        movlw   b'00001111'     ; RA0-RA3 entradas, RA4 salida
+        movwf   TRISA
+        clrf    TRISB           ; PORTB todo salidas
+        bcf     STATUS,RP0
+        clrf    PORTB
+        bcf     PORTA,4</div>
+<p>Los pulsadores llevan <i>pull-up</i> externos de 10 kΩ: PORTA no tiene <i>pull-up</i> internos, sólo PORTB.</p>
+<p><b>2) Resistencias y corriente.</b> Con un LED de \(V_F=2\) V a 5 V y 10 mA:</p>
+\[R=\frac{5-2}{0{,}010}=300\ \Omega\to330\ \Omega\ (\text{real: }9{,}1\ \text{mA})\]
+\[8\cdot9{,}1=72{,}7\ \text{mA}<100\ \text{mA}\ \checkmark\]
+<p>Con 20 mA por LED serían <b>160 mA</b> y se superaría el límite de PORTB: habría que usar un ULN2803.</p>
+<p><b>3) El motor.</b> 300 mA es doce veces el máximo de una patilla, y además a 12 V. Hace falta un <b>transistor</b> como interruptor con tres elementos imprescindibles:</p>
+<ul>
+<li><b>Resistencia de base</b> de 1 kΩ, para limitar la corriente de la patilla y saturar el transistor.</li>
+<li><b>Diodo volante</b> en antiparalelo con el motor: al cortar, la inductancia genera un pico que destruiría el transistor.</li>
+<li><b>Masa común</b> pero <b>alimentaciones separadas</b>; si el motor es grande, mejor un optoacoplador que aísle.</li>
+</ul>
+<p>Y un detalle que cuesta horas de depuración: <b>RA4 es de drenador abierto</b> y no puede dar un 1 por sí misma. Hace falta una resistencia de <i>pull-up</i> de 10 kΩ a VDD, o invertir la lógica con un PNP.</p></div></details></div><div class="prob"><h3 class="ph" id="ex8">Problema 8 · Comparaciones y máscaras en la lectura de un teclado <span class="tag">tipo</span> <a class="tag" href="tema-03.html">T3</a></h3><div class="enun"><p class="et">Enunciado</p>Cuatro teclas están conectadas a RA0–RA3 con <i>pull-up</i> (pulsada = 0), y en RA4–RA7 hay otras señales. Escribe el código que lea sólo las teclas, active el bit 5 de PORTB con la tecla 2 e invierta el bit 0 con la tecla 3.</div><details class="paso"><summary><span class="pn">✓</span>Solución completa</summary><div class="inner"><p><b>1) Aislar las teclas.</b></p>
+<div class="code">        movf    PORTA,0         ; los 8 bits
+        andlw   b'00001111'     ; máscara: conserva 0-3
+        movwf   TECLAS</div>
+<p>Sin la máscara, cualquier cambio en los bits altos falsearía la lectura. Como el teclado es activo a nivel bajo, <b>sin pulsar nada</b> el resultado es 0x0F.</p>
+<p><b>2) Tecla 2 → activar el bit 5.</b> Con un solo bit, la instrucción de bit es más corta que la máscara:</p>
+<div class="code">        btfss   TECLAS,2        ; ¿bit 2 = 1 (sin pulsar)?
+        bsf     PORTB,5         ; era 0: pulsada</div>
+<p>Con máscara serían tres instrucciones: <code>movf PORTB,0</code> + <code>iorlw b'00100000'</code> + <code>movwf PORTB</code>.</p>
+<p><b>3) Tecla 3 → invertir el bit 0.</b> Aquí sí hace falta XOR, porque hay que conmutar sin conocer el estado:</p>
+<div class="code">Tecla3  btfsc   TECLAS,3
+        goto    Fin             ; no está pulsada
+        movf    PORTB,0
+        xorlw   b'00000001'     ; invierte SOLO el bit 0
+        movwf   PORTB
+
+Espera  movf    PORTA,0         ; antirrebote
+        andlw   b'00001000'
+        btfsc   STATUS,Z
+        goto    Espera          ; sigue pulsada
+        call    Delay20
+Fin     ...</div>
+<p><b>Por qué el bucle de espera:</b> sin él, mientras la tecla esté pulsada el bit se invertiría miles de veces por segundo y el LED parecería encendido a media luz. Hay que detectar el <b>flanco</b>, no el nivel.</p>
+<div class="box key"><p>La regla de este tema: <b>un bit → instrucción de bit</b> (<code>bsf</code>, <code>bcf</code>, <code>btfsc</code>); <b>varios bits → máscara</b> (AND aísla, OR fuerza, XOR invierte).</p></div></div></details></div>
+<figure class="fig"><p class="ft">Calculadora interactiva · cuenta de ciclos</p><div data-sim="ciclos"></div><figcaption>Comprueba el problema 1: con n = 82 y m = 200 salen 50 006 ciclos, es decir 50,006 ms a 4 MHz.</figcaption></figure>
+</section>
+<nav class="pager" aria-label="Páginas"><a href="cuestiones.html"><small>← Anterior</small>Teoría</a><a class="nx" href="problemas.html"><small>Siguiente →</small>Qué cae en el examen</a></nav><p class="inicio" style="margin:36px 0 8px;text-align:center;font-size:13px;color:var(--muted)">Guía no oficial de Sistemas basados en Microprocesador (UPCT, GIEyA) · Datos tomados del curso <time datetime="2020-09">2020/21</time> (apuntes de la asignatura, programas de teoría comentados, ejercicios de entrega y la práctica final del ascensor) · página creada en noviembre de 2026</p>
+</main>
+</div>
+<script src="app.js"></script>
+<script src="sims.js"></script>
+</body>
+</html>

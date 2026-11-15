@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>T5 El temporizador TMR0 y el divisor de frecuencias · Sistemas basados en Microprocesador · Guía para aprobar</title>
+<meta name="description" content="Sistemas basados en Microprocesador (UPCT, GIEyA): tema 5, El temporizador TMR0 y el divisor de frecuencias">
+<meta name="theme-color" content="#1f3c88">
+<link href="https://fonts.googleapis.com" rel="preconnect"><link crossorigin href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Sans:ital,wght@0,400;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script>window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},svg:{fontCache:'global'}};</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+<link rel="stylesheet" href="style.css">
+<style>html{-webkit-text-size-adjust:100%}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+</head>
+<body>
+<div class="hub-bar" style="max-width:1180px;margin:0 auto;padding:10px 16px 0"><a href="https://helionacon-ui.github.io/GIEIA-UPCT/" style="display:inline-flex;align-items:center;gap:6px;font:600 13.5px/1 system-ui,sans-serif;padding:8px 12px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--fg);text-decoration:none">← Todas las guías GIEyA</a><p class="fecha" style="margin:6px 0 0;max-width:none;font:13px/1.45 system-ui,sans-serif;color:var(--muted)">Datos tomados del curso <time datetime="2020-09">2020/21</time> (apuntes de la asignatura, programas de teoría comentados, ejercicios de entrega y la práctica final del ascensor) · página creada en noviembre de 2026</p></div>
+<div class="crumb"><a href="index.html">Sistemas basados en Microprocesador</a><span class="sep">›</span><span>El microcontrolador y su programación</span><span class="sep">›</span><span>T5 · El temporizador TMR0 y el divisor de frecuencias</span></div><a href="#top" class="totop" id="totop" aria-label="Volver arriba">↑</a>
+<div class="wrap" id="top">
+<nav aria-label="Índice" class="toc"><a href="index.html" style="--tc:var(--c0)">Portada</a><div class="grp">Empezar</div><a href="index.html#cero" style="--tc:var(--c0)">Empieza aquí desde cero</a><a href="plan.html" style="--tc:var(--c0)">Cómo es la evaluación</a><a href="index.html#progreso" style="--tc:var(--c0)">Tu progreso</a><div class="grp">El microcontrolador y su programación</div><a href="tema-01.html" style="--tc:var(--c2)">T1 El microcontrolador PIC16F84A</a><a href="tema-02.html" style="--tc:var(--c3)">T2 El repertorio de instrucciones y la estructura de un programa</a><a href="tema-03.html" style="--tc:var(--c4)">T3 Operaciones aritméticas y lógicas: comparaciones y máscaras</a><a href="tema-04.html" style="--tc:var(--c5)">T4 Gestión del tiempo por cuenta de instrucciones</a><a href="tema-05.html" style="--tc:var(--c6)" class="on" aria-current="page">T5 El temporizador TMR0 y el divisor de frecuencias</a><div class="grp">Recursos y aplicaciones</div><a href="tema-06.html" style="--tc:var(--c7)">T6 Puertas de entrada y salida</a><a href="tema-07.html" style="--tc:var(--c8)">T7 Periféricos: displays, teclados y actuadores</a><a href="tema-08.html" style="--tc:var(--c1)">T8 Interrupciones</a><a href="tema-09.html" style="--tc:var(--c2)">T9 La memoria EEPROM de datos</a><div class="grp">Practicar</div><a href="cuestiones.html" style="--tc:var(--c8)">Cuestiones de teoría respondidas</a><a href="examenes.html" style="--tc:var(--c8)">Problemas de examen resueltos</a><a href="problemas.html" style="--tc:var(--c8)">Qué cae en el examen</a><a href="laboratorio.html" style="--tc:var(--c7)">Prácticas y herramientas</a><a href="formulario.html" style="--tc:var(--c8)">Formulario</a></nav>
+<main>
+<section class="sec tema" style="--tc:var(--c6);--tcs:var(--c6s)">
+<div class="sh"><span aria-hidden="true" class="badge">5</span><div class="shx"><p class="kick">El microcontrolador y su programación · Tema 5</p><h2 id="t5">El temporizador TMR0 y el divisor de frecuencias</h2><div class="tags"><span class="tag">El microcontrolador y su programación</span><span class="tag">Tiempo</span></div></div></div>
+<div class="zero"><p class="ft">Desde cero</p><p><b>Objetivo:</b> configurar el registro OPTION, calcular el valor a precargar en TMR0 para un tiempo dado y detectar el desbordamiento.</p><ul>
+<li>El <b>TMR0</b> es un contador de 8 bits que se incrementa <b>solo</b>, sin que el programa intervenga. Esa es toda su gracia: mientras cuenta, el microcontrolador puede estar haciendo otra cosa.</li>
+<li>Puede incrementarse por dos estímulos distintos, y eso lo decide el bit <b>T0CS</b> del registro OPTION: con el <b>oscilador interno</b> (T0CS = 0) se incrementa una vez por ciclo de instrucción y funciona como <b>temporizador</b>; con los <b>flancos de la patilla RA4</b> (T0CS = 1) funciona como <b>contador de eventos</b> externos.</li>
+<li>Entre el estímulo y el contador se puede intercalar un <b>divisor de frecuencias</b> o preescalador: hacen falta DF estímulos para un incremento. Los valores van de 1:2 a 1:256 en potencias de dos.</li>
+<li>El preescalador es <b>compartido</b> entre el TMR0 y el perro guardián: el bit <b>PSA</b> decide a cuál de los dos se asigna. Si se asigna al WDT (PSA = 1), el TMR0 trabaja sin división, es decir, DF = 1.</li>
+<li>Al llegar a 255 el TMR0 <b>se desborda</b>, vuelve a 0 y pone a 1 el bit <b>T0IF</b> del registro INTCON. Ese bit es el aviso de que ha pasado el tiempo, y <b>hay que borrarlo a mano</b>: el hardware lo pone a 1 pero no lo baja nunca.</li>
+<li>La idea para medir un tiempo es <b>precargar</b> el TMR0 con un valor \(n\) para que le queden \(256-n\) cuentas hasta desbordar. Ajustando \(n\) y DF se consigue el tiempo deseado.</li>
+<li>Hay un detalle del hardware que conviene conocer: al escribir en TMR0 se <b>borra el preescalador</b> y el contador se queda <b>dos ciclos</b> sin incrementarse. En temporizaciones muy ajustadas hay que tenerlo en cuenta.</li>
+<li>El TMR0 se puede usar de dos maneras: <b>consultando</b> T0IF en un bucle (sondeo), que sigue siendo espera activa pero más precisa, o habilitando la <b>interrupción</b> por desbordamiento (tema 8), que es lo que de verdad libera al procesador.</li>
+</ul></div>
+<details class="nom"><summary><span aria-hidden="true" class="nom-ic">Aa</span>Nomenclatura del tema 5 <span class="src">9 entradas</span></summary><div class="inner">
+<div class="tw"><table><tr><th>Símbolo</th><th>Significado</th><th>Unidad · nota</th></tr><tr><td class="sym">TMR0</td><td>contador de 8 bits</td><td class="u">0x01 banco 0</td></tr><tr><td class="sym">OPTION</td><td>configuración</td><td class="u">0x81 banco 1</td></tr><tr><td class="sym">T0CS</td><td>fuente del estímulo</td><td class="u">0 interno / 1 RA4</td></tr><tr><td class="sym">PSA</td><td>destino del preescalador</td><td class="u">0 TMR0 / 1 WDT</td></tr><tr><td class="sym">PS2:PS0</td><td>valor del divisor</td><td class="u">1:2 a 1:256</td></tr><tr><td class="sym">DF</td><td>divisor de frecuencias</td><td class="u"></td></tr><tr><td class="sym">T0IF</td><td>aviso de desbordamiento</td><td class="u">INTCON</td></tr><tr><td class="sym">t</td><td>4·Tosc·(256−n)·DF</td><td class="u"></td></tr><tr><td class="sym">65,536 ms</td><td>máximo a 4 MHz</td><td class="u">n=0, DF=256</td></tr></table></div></div></details>
+<figure class="fig"><p class="ft">Calculadora interactiva - TMR0, preescalador y valor de precarga</p><div data-sim="tmr0"></div><figcaption>Mueve los controles y observa cómo cambia el resultado: es el mismo cálculo que hay que saber hacer a mano en el examen.</figcaption></figure>
+<h3 id="t5-formulas">Fórmulas y conceptos que hay que saber</h3>
+<div class="box key"><ul><li><b>Fórmula fundamental:</b></li></ul>
+\[t_{desb}=4\,T_{osc}\,(256-n)\,DF=T_{CI}\,(256-n)\,DF\]
+<ul><li>y despejando el valor a precargar:</li></ul>
+\[n=256-\frac{t_{desb}}{T_{CI}\cdot DF}\]
+<ul><li><b>Registro OPTION</b> (banco 1, dirección 0x81):</li></ul>
+<div class="tw"><table><tr><th>7</th><th>6</th><th>5</th><th>4</th><th>3</th><th>2</th><th>1</th><th>0</th></tr>
+<tr><td>RBPU</td><td>INTEDG</td><td><b>T0CS</b></td><td><b>T0SE</b></td><td><b>PSA</b></td><td><b>PS2</b></td><td><b>PS1</b></td><td><b>PS0</b></td></tr></table></div>
+<div class="tw"><table><tr><th>Bit</th><th>Significado</th></tr>
+<tr><td><b>T0CS</b></td><td>0 = oscilador interno (temporizador) · 1 = patilla RA4 (contador)</td></tr>
+<tr><td><b>T0SE</b></td><td>0 = flanco de subida en RA4 · 1 = flanco de bajada</td></tr>
+<tr><td><b>PSA</b></td><td>0 = preescalador al <b>TMR0</b> · 1 = al perro guardián (TMR0 queda con DF = 1)</td></tr>
+<tr><td><b>PS2:PS0</b></td><td>valor del preescalador</td></tr>
+<tr><td><b>RBPU</b></td><td>0 = <i>pull-up</i> de PORTB activados</td></tr></table></div>
+<div class="tw"><table><tr><th>PS2:PS0</th><th>000</th><th>001</th><th>010</th><th>011</th><th>100</th><th>101</th><th>110</th><th>111</th></tr>
+<tr><td><b>DF (TMR0)</b></td><td>2</td><td>4</td><td>8</td><td>16</td><td>32</td><td>64</td><td>128</td><td><b>256</b></td></tr></table></div>
+<ul>
+<li><b>Tiempos máximos a 4 MHz</b> (con \(n=0\)): sin preescalador, <b>256 µs</b>; con 1:256, <b>65,536 ms</b>. Para más tiempo hay que contar desbordamientos con una variable.</li>
+<li><b>Valores útiles a 4 MHz con DF = 256</b> (cada cuenta son 256 µs):</li></ul>
+<div class="tw"><table><tr><th>Tiempo</th><th>Cuentas</th><th>n</th><th>Tiempo real</th></tr>
+<tr><td>10 ms</td><td>39,06</td><td>217</td><td>9,984 ms</td></tr>
+<tr><td>20 ms</td><td>78,13</td><td>178</td><td>19,968 ms</td></tr>
+<tr><td>50 ms</td><td>195,31</td><td>61</td><td>49,920 ms</td></tr>
+<tr><td>65,536 ms</td><td>256</td><td>0</td><td>exacto</td></tr></table></div>
+<ul><li><b>Código típico de espera por sondeo:</b></li></ul>
+<div class="code">        bsf     STATUS,RP0      ; banco 1
+        movlw   b'00000111'     ; T0CS=0 (osc), PSA=0, DF=1:256
+        movwf   OPTION_REG
+        bcf     STATUS,RP0      ; banco 0
+
+        movlw   d'61'           ; 50 ms con DF=256
+        movwf   TMR0
+        bcf     INTCON,T0IF     ; borrar el aviso ANTES
+Espera  btfss   INTCON,T0IF     ; ¿se ha desbordado?
+        goto    Espera
+        bcf     INTCON,T0IF     ; borrarlo para la próxima</div></div>
+<h3 id="t5-metodo">Método paso a paso</h3>
+<ol class="steps">
+<li><b>Elige el preescalador</b>: calcula \(256\cdot DF\cdot T_{CI}\) y busca el DF más pequeño cuyo tiempo máximo supere el que necesitas. Un DF pequeño da más resolución.</li>
+<li><b>Calcula \(n\)</b> con la fórmula. Si sale decimal, prueba el entero por arriba y por abajo y quédate con el que menos se desvíe.</li>
+<li><b>Monta la palabra de OPTION:</b> T0CS = 0 para temporizar, PSA = 0 para asignar el preescalador al TMR0 y PS2:PS0 según la tabla.</li>
+<li><b>Escribe OPTION en el banco 1</b> y vuelve al banco 0.</li>
+<li><b>Precarga TMR0, borra T0IF</b> y espera a que se ponga a 1 (o habilita la interrupción).</li>
+<li><b>Vuelve a borrar T0IF</b> y a precargar TMR0 si el tiempo es periódico.</li>
+<li><b>Para tiempos largos</b>, cuenta desbordamientos con una variable: 15 desbordamientos de 65,5 ms dan casi un segundo.</li>
+</ol>
+<div class="box trap"><h4>Trampas típicas</h4><ul>
+<li><b>Olvidar borrar T0IF.</b> El hardware lo pone a 1 pero nunca lo baja: si no lo borras, el bucle de espera sale inmediatamente la segunda vez.</li>
+<li>Configurar OPTION desde el <b>banco 0</b>. Está en el banco 1.</li>
+<li>Poner <b>PSA = 1</b> creyendo que así se asigna el preescalador al TMR0. Es al revés: PSA = 0 lo asigna al TMR0.</li>
+<li>Olvidar <b>precargar TMR0</b> en cada ciclo: tras el desbordamiento sigue contando desde 0, no desde \(n\).</li>
+<li>Calcular \(n\) como \(t/(T_{CI}\cdot DF)\) en vez de \(256-\) eso.</li>
+<li>Pedir un tiempo mayor que el máximo alcanzable y obtener un \(n\) negativo. Entonces hay que contar varios desbordamientos.</li>
+<li>Olvidar que escribir en TMR0 <b>borra el preescalador</b> y hace perder dos ciclos.</li>
+</ul></div>
+<h3 id="t5-problema">Problema resuelto</h3>
+<div class="prob"><div class="enun"><p class="et">Enunciado</p><p>Un PIC16F84A a 4 MHz debe generar en RB0 una onda cuadrada de <b>10 Hz</b> usando el TMR0.</p>
+<ol><li>¿Qué preescalador y qué valor de precarga hacen falta?</li>
+<li>Escribe el código.</li>
+<li>¿Qué error se comete y cómo se corregiría?</li></ol></div>
+<details class="paso"><summary><span class="pn">✓</span>Ver solución paso a paso</summary><div class="inner"><p><b>1) Cálculo.</b> Una onda de 10 Hz tiene periodo 100 ms, así que hay que conmutar RB0 cada <b>50 ms</b>.</p>
+<p>A 4 MHz, \(T_{CI}=1\) µs. El tiempo máximo que da el TMR0 de una vez es</p>
+\[t_{\max}=T_{CI}\cdot256\cdot DF\]
+<div class="tw"><table><tr><th>DF</th><th>1</th><th>16</th><th>64</th><th>128</th><th><b>256</b></th></tr>
+<tr><td>\(t_{\max}\)</td><td>256 µs</td><td>4,1 ms</td><td>16,4 ms</td><td>32,8 ms</td><td><b>65,5 ms</b></td></tr></table></div>
+<p>Sólo DF = 256 permite llegar a 50 ms de una sola vez. Con él, cada cuenta del TMR0 dura \(1\ \mu\text{s}\cdot256=256\) µs:</p>
+\[n=256-\frac{50\,000\ \mu\text{s}}{1\ \mu\text{s}\cdot256}=256-195{,}31=60{,}69\]
+<p>Probamos los dos enteros vecinos:</p>
+\[n=61\ \Rightarrow\ t=1\cdot(256-61)\cdot256=195\cdot256=49\,920\ \mu\text{s}=49{,}920\ \text{ms}\]
+\[n=60\ \Rightarrow\ t=196\cdot256=50\,176\ \mu\text{s}=50{,}176\ \text{ms}\]
+<p>El error de \(n=61\) es de \(-80\) µs (−0,16 %) y el de \(n=60\) es de \(+176\) µs (+0,35 %). Elegimos <b>\(n=61\)</b>, que se desvía menos.</p>
+<p><b>2) Código.</b></p>
+<div class="code">        list    P=16F84A
+        #include &lt;p16f84a.inc&gt;
+        __config _XT_OSC &amp; _WDT_OFF
+
+        org     0x00
+        goto    Inicio
+
+Inicio  bsf     STATUS,RP0      ; ---- banco 1
+        bcf     TRISB,0         ; RB0 salida
+        movlw   b'00000111'     ; T0CS=0, T0SE=x, PSA=0, PS=111 (1:256)
+        movwf   OPTION_REG
+        bcf     STATUS,RP0      ; ---- banco 0
+        bcf     PORTB,0
+
+Bucle   movlw   d'61'           ; precarga para 50 ms
+        movwf   TMR0
+        bcf     INTCON,T0IF     ; borra el aviso
+
+Espera  btfss   INTCON,T0IF     ; ¿desbordado?
+        goto    Espera          ; todavía no
+
+        movlw   b'00000001'
+        xorwf   PORTB,1         ; conmuta RB0
+        goto    Bucle</div>
+<p><b>3) Error y corrección.</b> El periodo real es \(2\cdot49{,}920=99{,}84\) ms, lo que da <b>10,016 Hz</b> en vez de 10: un error del <b>0,16 %</b>.</p>
+<p>Las tres formas de mejorarlo:</p>
+<ul>
+<li><b>Compensar con instrucciones:</b> añadir un bucle corto de 80 µs (80 ciclos) después del desbordamiento. Se consigue el periodo exacto, pero vuelve la espera activa.</li>
+<li><b>Bajar el preescalador y contar desbordamientos:</b> con DF = 64, cada cuenta son 64 µs y 50 ms son 781,25 cuentas. Usando tres desbordamientos de 256 cuentas más un resto, el ajuste es mucho más fino.</li>
+<li><b>Cambiar el cristal:</b> con 4,194304 MHz (un cristal estándar «de reloj» ×128), los números salen exactos. Es lo que hacen los relojes digitales.</li>
+</ul>
+<div class="box key"><p>Para un LED parpadeando, un 0,16 % no lo nota nadie. Pero si la señal fuese la base de tiempos de un reloj, ese error acumularía <b>2,3 minutos al día</b>. Saber estimar el error, y no sólo calcular \(n\), es lo que distingue un diseño de un ejercicio.</p></div></div></details></div>
+<h3 id="t5-auto">Autoevaluación</h3>
+<p class="muted">Responde antes de desplegar.</p><details class="paso"><summary><span class="pn">1</span>¿Qué fórmula da el tiempo de desbordamiento del TMR0?</summary><div class="inner"><p>\(t=4T_{osc}(256-n)\cdot DF\), es decir, \(T_{CI}\cdot(256-n)\cdot DF\).</p></div></details><details class="paso"><summary><span class="pn">2</span>¿Qué bit decide si el TMR0 cuenta tiempo o eventos externos?</summary><div class="inner"><p><b>T0CS</b>: 0 = oscilador interno (temporizador), 1 = patilla RA4 (contador).</p></div></details><details class="paso"><summary><span class="pn">3</span>¿Qué hace el bit PSA?</summary><div class="inner"><p>Asigna el preescalador: <b>0 al TMR0</b>, 1 al perro guardián (y entonces el TMR0 trabaja con DF = 1).</p></div></details><details class="paso"><summary><span class="pn">4</span>¿Qué bit avisa del desbordamiento y quién lo borra?</summary><div class="inner"><p><b>T0IF</b> de INTCON. Lo pone a 1 el hardware y hay que <b>borrarlo por software</b>.</p></div></details><details class="paso"><summary><span class="pn">5</span>¿Cuál es el tiempo máximo con un solo desbordamiento a 4 MHz?</summary><div class="inner"><p><b>65,536 ms</b>, con n = 0 y DF = 256.</p></div></details><details class="paso"><summary><span class="pn">6</span>¿Qué pasa al escribir en TMR0?</summary><div class="inner"><p>Se <b>borra el preescalador</b> y el contador se queda dos ciclos sin incrementarse.</p></div></details><details class="paso"><summary><span class="pn">7</span>¿Cómo se consiguen tiempos mayores que el máximo?</summary><div class="inner"><p>Contando <b>desbordamientos</b> con una variable auxiliar.</p></div></details>
+</section>
+<nav class="pager" aria-label="Páginas"><a href="tema-04.html"><small>← Anterior</small>T4 · Gestión del tiempo por cuenta de instrucciones</a><a class="nx" href="tema-06.html"><small>Siguiente →</small>T6 · Puertas de entrada y salida</a></nav>
+<p class="inicio" style="margin:36px 0 8px;text-align:center;font-size:13px;color:var(--muted)">Guía no oficial de Sistemas basados en Microprocesador (UPCT, GIEyA) · Datos tomados del curso <time datetime="2020-09">2020/21</time> (apuntes de la asignatura, programas de teoría comentados, ejercicios de entrega y la práctica final del ascensor) · página creada en noviembre de 2026</p>
+</main>
+</div>
+<script src="app.js"></script>
+<script src="sims.js"></script>
+</body>
+</html>

@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>T6 Puertas de entrada y salida · Sistemas basados en Microprocesador · Guía para aprobar</title>
+<meta name="description" content="Sistemas basados en Microprocesador (UPCT, GIEyA): tema 6, Puertas de entrada y salida">
+<meta name="theme-color" content="#1f3c88">
+<link href="https://fonts.googleapis.com" rel="preconnect"><link crossorigin href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Sans:ital,wght@0,400;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script>window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},svg:{fontCache:'global'}};</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+<link rel="stylesheet" href="style.css">
+<style>html{-webkit-text-size-adjust:100%}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+</head>
+<body>
+<div class="hub-bar" style="max-width:1180px;margin:0 auto;padding:10px 16px 0"><a href="https://helionacon-ui.github.io/GIEIA-UPCT/" style="display:inline-flex;align-items:center;gap:6px;font:600 13.5px/1 system-ui,sans-serif;padding:8px 12px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--fg);text-decoration:none">← Todas las guías GIEyA</a><p class="fecha" style="margin:6px 0 0;max-width:none;font:13px/1.45 system-ui,sans-serif;color:var(--muted)">Datos tomados del curso <time datetime="2020-09">2020/21</time> (apuntes de la asignatura, programas de teoría comentados, ejercicios de entrega y la práctica final del ascensor) · página creada en noviembre de 2026</p></div>
+<div class="crumb"><a href="index.html">Sistemas basados en Microprocesador</a><span class="sep">›</span><span>Recursos y aplicaciones</span><span class="sep">›</span><span>T6 · Puertas de entrada y salida</span></div><a href="#top" class="totop" id="totop" aria-label="Volver arriba">↑</a>
+<div class="wrap" id="top">
+<nav aria-label="Índice" class="toc"><a href="index.html" style="--tc:var(--c0)">Portada</a><div class="grp">Empezar</div><a href="index.html#cero" style="--tc:var(--c0)">Empieza aquí desde cero</a><a href="plan.html" style="--tc:var(--c0)">Cómo es la evaluación</a><a href="index.html#progreso" style="--tc:var(--c0)">Tu progreso</a><div class="grp">El microcontrolador y su programación</div><a href="tema-01.html" style="--tc:var(--c2)">T1 El microcontrolador PIC16F84A</a><a href="tema-02.html" style="--tc:var(--c3)">T2 El repertorio de instrucciones y la estructura de un programa</a><a href="tema-03.html" style="--tc:var(--c4)">T3 Operaciones aritméticas y lógicas: comparaciones y máscaras</a><a href="tema-04.html" style="--tc:var(--c5)">T4 Gestión del tiempo por cuenta de instrucciones</a><a href="tema-05.html" style="--tc:var(--c6)">T5 El temporizador TMR0 y el divisor de frecuencias</a><div class="grp">Recursos y aplicaciones</div><a href="tema-06.html" style="--tc:var(--c7)" class="on" aria-current="page">T6 Puertas de entrada y salida</a><a href="tema-07.html" style="--tc:var(--c8)">T7 Periféricos: displays, teclados y actuadores</a><a href="tema-08.html" style="--tc:var(--c1)">T8 Interrupciones</a><a href="tema-09.html" style="--tc:var(--c2)">T9 La memoria EEPROM de datos</a><div class="grp">Practicar</div><a href="cuestiones.html" style="--tc:var(--c8)">Cuestiones de teoría respondidas</a><a href="examenes.html" style="--tc:var(--c8)">Problemas de examen resueltos</a><a href="problemas.html" style="--tc:var(--c8)">Qué cae en el examen</a><a href="laboratorio.html" style="--tc:var(--c7)">Prácticas y herramientas</a><a href="formulario.html" style="--tc:var(--c8)">Formulario</a></nav>
+<main>
+<section class="sec tema" style="--tc:var(--c7);--tcs:var(--c7s)">
+<div class="sh"><span aria-hidden="true" class="badge">6</span><div class="shx"><p class="kick">Recursos y aplicaciones · Tema 6</p><h2 id="t6">Puertas de entrada y salida</h2><div class="tags"><span class="tag">Recursos y aplicaciones</span><span class="tag">Periféricos</span></div></div></div>
+<div class="zero"><p class="ft">Desde cero</p><p><b>Objetivo:</b> configurar los puertos con los registros TRIS, leer entradas con seguridad y gobernar cargas respetando los límites eléctricos del PIC.</p><ul>
+<li>El PIC16F84A tiene dos puertas: <b>PORTA</b> con 5 patillas (RA0 a RA4) y <b>PORTB</b> con 8 (RB0 a RB7). Cada patilla puede ser entrada o salida, y se decide <b>bit a bit</b>.</li>
+<li>Quien lo decide es el registro <b>TRIS</b> correspondiente, en el banco 1: un <b>1</b> configura la patilla como <b>entrada</b> y un <b>0</b> como <b>salida</b>. La regla nemotécnica que se usa siempre: <b>1 = Input, 0 = Output</b>.</li>
+<li>Tras un <i>reset</i>, todos los TRIS valen 0xFF, es decir, <b>todas las patillas son entradas</b>. Si no configuras nada, el programa no saca nada por ningún sitio.</li>
+<li>La patilla <b>RA4</b> es distinta de las demás: su salida es de <b>drenador abierto</b>, así que no puede poner un 1 por sí misma y necesita una resistencia de <i>pull-up</i> externa. Es también la entrada de reloj del TMR0.</li>
+<li>PORTB tiene <b>resistencias de <i>pull-up</i> internas</b> que se activan todas a la vez poniendo a 0 el bit <b>RBPU</b> de OPTION. Eso ahorra componentes al conectar pulsadores.</li>
+<li>Al leer un puerto se lee el <b>estado real de las patillas</b>, no lo que escribiste. Eso provoca el problema de <b>lectura-modificación-escritura</b>: instrucciones como <code>bsf PORTB,0</code> leen los ocho bits, cambian uno y escriben los ocho. Si otra patilla está cargada y su tensión no ha llegado todavía al nivel lógico, se reescribe con el valor equivocado. La solución estándar es trabajar sobre una <b>variable espejo</b> en RAM y volcarla al puerto.</li>
+<li>Los <b>límites eléctricos</b> no son un detalle: cada patilla da o absorbe como mucho <b>25 mA</b>, y el total de PORTB no debe pasar de <b>100 mA</b> (150 mA sumidero). Un LED con su resistencia consume unos 10 mA, así que ocho LED ya están en el límite.</li>
+<li>Por eso, para gobernar cargas de más consumo se usan <b>transistores</b>, <b>ULN2803</b> (ocho Darlington en un chip) o <b>relés</b>, y para aislar, <b>optoacopladores</b>. Un motor nunca se conecta directamente a una patilla.</li>
+<li>Un pulsador mecánico produce <b>rebotes</b>: decenas de transiciones en unos milisegundos. Sin antirrebote por software (20 ms de retardo tras detectar el flanco) o por hardware (condensador), una pulsación se cuenta muchas veces.</li>
+</ul></div>
+<details class="nom"><summary><span aria-hidden="true" class="nom-ic">Aa</span>Nomenclatura del tema 6 <span class="src">9 entradas</span></summary><div class="inner">
+<div class="tw"><table><tr><th>Símbolo</th><th>Significado</th><th>Unidad · nota</th></tr><tr><td class="sym">TRISA / TRISB</td><td>dirección de las patillas</td><td class="u">banco 1</td></tr><tr><td class="sym">1 = entrada</td><td>0 = salida</td><td class="u"></td></tr><tr><td class="sym">PORTA / PORTB</td><td>dato de las patillas</td><td class="u">banco 0</td></tr><tr><td class="sym">RBPU</td><td>pull-up de PORTB</td><td class="u">0 = activados</td></tr><tr><td class="sym">RA4</td><td>drenador abierto</td><td class="u">necesita pull-up</td></tr><tr><td class="sym">25 mA</td><td>máximo por patilla</td><td class="u"></td></tr><tr><td class="sym">100 mA</td><td>máximo de PORTB</td><td class="u"></td></tr><tr><td class="sym">ULN2803</td><td>8 Darlington</td><td class="u">cargas mayores</td></tr><tr><td class="sym">variable espejo</td><td>evita lectura-modificación-escritura</td><td class="u"></td></tr></table></div></div></details>
+<figure class="fig"><p class="ft">Figura interactiva - TRIS, PORT y limites de corriente</p><div data-sim="puertos"></div><figcaption>Mueve los controles y observa cómo cambia el resultado: es el mismo cálculo que hay que saber hacer a mano en el examen.</figcaption></figure>
+<h3 id="t6-formulas">Fórmulas y conceptos que hay que saber</h3>
+<div class="box key"><ul><li><b>Configuración de puertos:</b></li></ul>
+<div class="code">        bsf     STATUS,RP0      ; ---- banco 1
+        movlw   b'00011111'
+        movwf   TRISA           ; RA0-RA4 entradas
+        movlw   b'11110000'
+        movwf   TRISB           ; RB0-RB3 salidas, RB4-RB7 entradas
+        bcf     OPTION_REG,RBPU ; pull-up de PORTB activados
+        bcf     STATUS,RP0      ; ---- banco 0
+        clrf    PORTB</div>
+<div class="tw"><table><tr><th>TRIS</th><th>Patilla</th></tr>
+<tr><td><b>1</b></td><td><b>I</b>nput, entrada (alta impedancia)</td></tr>
+<tr><td><b>0</b></td><td><b>O</b>utput, salida</td></tr></table></div>
+<ul><li><b>Límites eléctricos del PIC16F84A:</b></li></ul>
+<div class="tw"><table><tr><th>Parámetro</th><th>Valor</th></tr>
+<tr><td>Corriente por patilla (fuente o sumidero)</td><td><b>25 mA</b></td></tr>
+<tr><td>Total de PORTA</td><td>50 mA fuente / 80 mA sumidero</td></tr>
+<tr><td>Total de PORTB</td><td><b>100 mA</b> fuente / 150 mA sumidero</td></tr>
+<tr><td>Nivel alto de salida (VOH)</td><td>≥ VDD − 0,7 V</td></tr>
+<tr><td>Nivel bajo de salida (VOL)</td><td>≤ 0,6 V</td></tr>
+</table></div>
+<ul><li><b>Resistencia para un LED:</b></li></ul>
+\[R=\frac{V_{DD}-V_{LED}}{I_{LED}}=\frac{5-2}{0{,}010}=300\ \Omega\ \to\ 330\ \Omega\ \text{(normalizada)}\]
+<ul><li><b>Montajes de pulsador:</b></li></ul>
+<div class="tw"><table><tr><th>Montaje</th><th>Sin pulsar</th><th>Pulsado</th><th>Resistencia</th></tr>
+<tr><td><i>Pull-up</i> (el habitual)</td><td>1</td><td><b>0</b></td><td>a VDD (10 kΩ o interna)</td></tr>
+<tr><td><i>Pull-down</i></td><td>0</td><td><b>1</b></td><td>a masa (10 kΩ)</td></tr></table></div>
+<ul><li><b>Variable espejo</b> (evita el problema de lectura-modificación-escritura):</li></ul>
+<div class="code">ESPEJO  equ     0x0C
+        bsf     ESPEJO,3        ; modifica la copia en RAM
+        movf    ESPEJO,0
+        movwf   PORTB           ; vuelca de una vez</div></div>
+<h3 id="t6-metodo">Método paso a paso</h3>
+<ol class="steps">
+<li><b>Dibuja la tabla de patillas</b> antes de programar: qué hay conectado en cada una y si es entrada o salida.</li>
+<li><b>Escribe los TRIS en binario</b>, no en hexadecimal: se ve de un vistazo qué patilla es qué.</li>
+<li><b>Configura en el banco 1 y vuelve al 0.</b> Después, <b>inicializa</b> las salidas a un valor conocido.</li>
+<li><b>Para leer entradas:</b> lee el puerto a W, enmascara lo que no interese y compara.</li>
+<li><b>Para escribir salidas:</b> usa una variable espejo si vas a modificar bits sueltos de un puerto con cargas.</li>
+<li><b>Comprueba la corriente:</b> suma el consumo de todo lo conectado y compáralo con los límites. Si se pasa, pon transistores.</li>
+<li><b>Pon antirrebote</b> en todo pulsador mecánico.</li>
+</ol>
+<div class="box trap"><h4>Trampas típicas</h4><ul>
+<li>Invertir el criterio de TRIS. <b>1 es entrada</b>, 0 es salida; no al revés.</li>
+<li>Configurar los TRIS desde el banco 0.</li>
+<li>Olvidar que tras el <i>reset</i> todo son entradas y preguntarse por qué no se enciende nada.</li>
+<li>Conectar un LED sin resistencia, o un motor directamente a una patilla.</li>
+<li>Olvidar la resistencia de <i>pull-up</i> externa en <b>RA4</b>, que es de drenador abierto.</li>
+<li>Leer un pulsador sin antirrebote y contar diez pulsaciones por cada una real.</li>
+<li>Encadenar <code>bsf</code>/<code>bcf</code> sobre un puerto con cargas lentas y toparse con el problema de lectura-modificación-escritura.</li>
+<li>Superar los 100 mA de PORTB con ocho LED a 20 mA cada uno.</li>
+</ul></div>
+<h3 id="t6-problema">Problema resuelto</h3>
+<div class="prob"><div class="enun"><p class="et">Enunciado</p><p>Diseña la conexión y el programa de un sistema con <b>cuatro pulsadores</b> en RA0 a RA3, <b>ocho LED</b> en PORTB y un <b>motor</b> de 12 V y 300 mA controlado desde RA4.</p>
+<ol><li>Configura los puertos.</li>
+<li>Calcula las resistencias de los LED y comprueba los límites de corriente.</li>
+<li>Explica cómo se conecta el motor y por qué.</li></ol></div>
+<details class="paso"><summary><span class="pn">✓</span>Ver solución paso a paso</summary><div class="inner"><p><b>1) Configuración.</b></p>
+<div class="code">        bsf     STATUS,RP0      ; ---- banco 1
+        movlw   b'00001111'     ; RA0-RA3 entradas, RA4 salida
+        movwf   TRISA
+        clrf    TRISB           ; PORTB todo salidas
+        bcf     OPTION_REG,RBPU ; pull-up internos de PORTB (aquí no hacen falta)
+        bcf     STATUS,RP0      ; ---- banco 0
+        clrf    PORTB
+        bcf     PORTA,4         ; motor parado</div>
+<p>Los pulsadores van con <i>pull-up</i> a VDD de 10 kΩ, así que <b>sin pulsar leen 1</b> y pulsados leen 0. PORTA no tiene <i>pull-up</i> internos, así que aquí son obligatorios.</p>
+<p><b>2) Resistencias de los LED y límites.</b> Con un LED rojo de \(V_F=2\) V alimentado a 5 V y 10 mA:</p>
+\[R=\frac{5-2}{0{,}010}=300\ \Omega\ \Rightarrow\ \boxed{330\ \Omega}\ \text{(valor normalizado)}\]
+<p>Con 330 Ω la corriente real es \((5-2)/330=9{,}1\) mA, dentro de los 25 mA por patilla ✓</p>
+<p>Comprobación del <b>total</b> de PORTB con los ocho LED encendidos:</p>
+\[8\cdot9{,}1=72{,}7\ \text{mA}<100\ \text{mA}\ \checkmark\]
+<p>Queda margen, pero poco. Si se quisieran 20 mA por LED serían 160 mA y <b>se superaría el límite</b>: habría que usar un ULN2803 o LED de alta eficiencia.</p>
+<p><b>3) El motor.</b> 300 mA es <b>doce veces</b> el máximo de una patilla, y además funciona a 12 V, no a 5. Conectarlo directamente destruiría el PIC. La solución es un <b>transistor</b> como interruptor:</p>
+<div class="code">RA4 ──[1 kΩ]──┤ base
+              │  BD139 (o MOSFET IRF540)
+      emisor ─┴─ masa común
+   colector ───┬── motor ──── +12 V
+               │
+               └─ diodo volante 1N4007 (cátodo al +12 V)</div>
+<p>Tres cosas imprescindibles:</p>
+<ul>
+<li><b>Resistencia de base</b> de 1 kΩ, para limitar la corriente que sale de la patilla a unos 4,4 mA y saturar el transistor.</li>
+<li><b>Diodo volante</b> en antiparalelo con el motor. Al cortar la corriente, la inductancia del bobinado genera un pico de tensión que destruiría el transistor; el diodo le da camino.</li>
+<li><b>Masa común</b> entre los 5 V del PIC y los 12 V del motor, pero <b>alimentaciones separadas</b>: el ruido del motor no debe llegar al PIC. Si el motor es grande, lo correcto es un <b>optoacoplador</b> que aísle galvánicamente los dos circuitos.</li>
+</ul>
+<p><b>Y un detalle sobre RA4.</b> Esta patilla tiene salida de <b>drenador abierto</b>: puede llevar su salida a 0 V, pero <b>no puede dar un 1</b>. Para que pueda excitar la base del transistor hace falta una resistencia de <i>pull-up</i> de 10 kΩ a VDD, o bien invertir la lógica y usar un transistor PNP. Si se olvida, el circuito simplemente no funciona y es muy difícil de diagnosticar sin un osciloscopio.</p>
+<div class="box key"><p>El reparto de responsabilidades que hay que tener claro: el PIC <b>decide</b>, la electrónica de potencia <b>actúa</b>. Una patilla de un microcontrolador es una señal lógica de unos pocos miliamperios, nunca una fuente de alimentación.</p></div></div></details></div>
+<h3 id="t6-auto">Autoevaluación</h3>
+<p class="muted">Responde antes de desplegar.</p><details class="paso"><summary><span class="pn">1</span>¿Qué significa un 1 en un registro TRIS?</summary><div class="inner"><p>Que la patilla es <b>entrada</b>. Un 0 la configura como salida.</p></div></details><details class="paso"><summary><span class="pn">2</span>¿Cómo quedan los puertos tras un reset?</summary><div class="inner"><p>Todos los TRIS a 0xFF: <b>todas las patillas son entradas</b>.</p></div></details><details class="paso"><summary><span class="pn">3</span>¿Qué tiene de especial la patilla RA4?</summary><div class="inner"><p>Su salida es de <b>drenador abierto</b> (necesita <i>pull-up</i> externa) y es la entrada de reloj del TMR0.</p></div></details><details class="paso"><summary><span class="pn">4</span>¿Cómo se activan los <i>pull-up</i> internos de PORTB?</summary><div class="inner"><p>Poniendo a 0 el bit <b>RBPU</b> del registro OPTION. Afectan a todo el puerto a la vez.</p></div></details><details class="paso"><summary><span class="pn">5</span>¿Qué es el problema de lectura-modificación-escritura?</summary><div class="inner"><p>Que <code>bsf PORTB,x</code> lee los ocho bits del <b>puerto físico</b>, cambia uno y escribe los ocho; si alguna patilla no ha alcanzado su nivel, se reescribe mal. Se evita con una <b>variable espejo</b>.</p></div></details><details class="paso"><summary><span class="pn">6</span>¿Cuánta corriente admite una patilla y cuánta PORTB entero?</summary><div class="inner"><p><b>25 mA</b> por patilla y <b>100 mA</b> el conjunto de PORTB.</p></div></details><details class="paso"><summary><span class="pn">7</span>¿Por qué hace falta un diodo volante al gobernar un motor?</summary><div class="inner"><p>Porque al cortar la corriente la inductancia genera un pico de tensión que destruiría el transistor.</p></div></details>
+</section>
+<nav class="pager" aria-label="Páginas"><a href="tema-05.html"><small>← Anterior</small>T5 · El temporizador TMR0 y el divisor de frecuencias</a><a class="nx" href="tema-07.html"><small>Siguiente →</small>T7 · Periféricos: displays, teclados y actuadores</a></nav>
+<p class="inicio" style="margin:36px 0 8px;text-align:center;font-size:13px;color:var(--muted)">Guía no oficial de Sistemas basados en Microprocesador (UPCT, GIEyA) · Datos tomados del curso <time datetime="2020-09">2020/21</time> (apuntes de la asignatura, programas de teoría comentados, ejercicios de entrega y la práctica final del ascensor) · página creada en noviembre de 2026</p>
+</main>
+</div>
+<script src="app.js"></script>
+<script src="sims.js"></script>
+</body>
+</html>

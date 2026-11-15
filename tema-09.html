@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>T9 La memoria EEPROM de datos · Sistemas basados en Microprocesador · Guía para aprobar</title>
+<meta name="description" content="Sistemas basados en Microprocesador (UPCT, GIEyA): tema 9, La memoria EEPROM de datos">
+<meta name="theme-color" content="#1f3c88">
+<link href="https://fonts.googleapis.com" rel="preconnect"><link crossorigin href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Sans:ital,wght@0,400;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script>window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},svg:{fontCache:'global'}};</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+<link rel="stylesheet" href="style.css">
+<style>html{-webkit-text-size-adjust:100%}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+</head>
+<body>
+<div class="hub-bar" style="max-width:1180px;margin:0 auto;padding:10px 16px 0"><a href="https://helionacon-ui.github.io/GIEIA-UPCT/" style="display:inline-flex;align-items:center;gap:6px;font:600 13.5px/1 system-ui,sans-serif;padding:8px 12px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--fg);text-decoration:none">← Todas las guías GIEyA</a><p class="fecha" style="margin:6px 0 0;max-width:none;font:13px/1.45 system-ui,sans-serif;color:var(--muted)">Datos tomados del curso <time datetime="2020-09">2020/21</time> (apuntes de la asignatura, programas de teoría comentados, ejercicios de entrega y la práctica final del ascensor) · página creada en noviembre de 2026</p></div>
+<div class="crumb"><a href="index.html">Sistemas basados en Microprocesador</a><span class="sep">›</span><span>Recursos y aplicaciones</span><span class="sep">›</span><span>T9 · La memoria EEPROM de datos</span></div><a href="#top" class="totop" id="totop" aria-label="Volver arriba">↑</a>
+<div class="wrap" id="top">
+<nav aria-label="Índice" class="toc"><a href="index.html" style="--tc:var(--c0)">Portada</a><div class="grp">Empezar</div><a href="index.html#cero" style="--tc:var(--c0)">Empieza aquí desde cero</a><a href="plan.html" style="--tc:var(--c0)">Cómo es la evaluación</a><a href="index.html#progreso" style="--tc:var(--c0)">Tu progreso</a><div class="grp">El microcontrolador y su programación</div><a href="tema-01.html" style="--tc:var(--c2)">T1 El microcontrolador PIC16F84A</a><a href="tema-02.html" style="--tc:var(--c3)">T2 El repertorio de instrucciones y la estructura de un programa</a><a href="tema-03.html" style="--tc:var(--c4)">T3 Operaciones aritméticas y lógicas: comparaciones y máscaras</a><a href="tema-04.html" style="--tc:var(--c5)">T4 Gestión del tiempo por cuenta de instrucciones</a><a href="tema-05.html" style="--tc:var(--c6)">T5 El temporizador TMR0 y el divisor de frecuencias</a><div class="grp">Recursos y aplicaciones</div><a href="tema-06.html" style="--tc:var(--c7)">T6 Puertas de entrada y salida</a><a href="tema-07.html" style="--tc:var(--c8)">T7 Periféricos: displays, teclados y actuadores</a><a href="tema-08.html" style="--tc:var(--c1)">T8 Interrupciones</a><a href="tema-09.html" style="--tc:var(--c2)" class="on" aria-current="page">T9 La memoria EEPROM de datos</a><div class="grp">Practicar</div><a href="cuestiones.html" style="--tc:var(--c8)">Cuestiones de teoría respondidas</a><a href="examenes.html" style="--tc:var(--c8)">Problemas de examen resueltos</a><a href="problemas.html" style="--tc:var(--c8)">Qué cae en el examen</a><a href="laboratorio.html" style="--tc:var(--c7)">Prácticas y herramientas</a><a href="formulario.html" style="--tc:var(--c8)">Formulario</a></nav>
+<main>
+<section class="sec tema" style="--tc:var(--c2);--tcs:var(--c2s)">
+<div class="sh"><span aria-hidden="true" class="badge">9</span><div class="shx"><p class="kick">Recursos y aplicaciones · Tema 9</p><h2 id="t9">La memoria EEPROM de datos</h2><div class="tags"><span class="tag">Recursos y aplicaciones</span><span class="tag">Periféricos</span></div></div></div>
+<div class="zero"><p class="ft">Desde cero</p><p><b>Objetivo:</b> leer y escribir la EEPROM del PIC respetando la secuencia obligatoria y entender sus limitaciones.</p><ul>
+<li>La <b>EEPROM de datos</b> del PIC16F84A son <b>64 bytes</b> de memoria <b>no volátil</b>: conservan su contenido al quitar la alimentación. Es donde se guardan configuraciones, contadores que deben sobrevivir a un corte de luz, calibraciones o el último estado del sistema.</li>
+<li>No forma parte del mapa de memoria de datos: se accede a ella <b>indirectamente</b>, a través de cuatro registros. <b>EEADR</b> (dirección), <b>EEDATA</b> (dato), <b>EECON1</b> (control) y <b>EECON2</b> (un registro «fantasma» que sólo sirve para la secuencia de desbloqueo).</li>
+<li>La <b>lectura</b> es sencilla: se pone la dirección en EEADR, se activa el bit RD de EECON1 y el dato aparece en EEDATA en el ciclo siguiente.</li>
+<li>La <b>escritura</b> es otra cosa. Exige una <b>secuencia obligatoria</b> de desbloqueo: escribir 0x55 y luego 0xAA en EECON2, y sólo entonces activar el bit WR. Si la secuencia se altera o se interrumpe, la escritura <b>no ocurre</b>.</li>
+<li>Esa secuencia no es un capricho: evita que un programa descontrolado, un pico de tensión o un reinicio corrompan la memoria. Es la misma filosofía que el perro guardián.</li>
+<li>Durante la secuencia hay que <b>deshabilitar las interrupciones</b> (borrar GIE) y volver a habilitarlas después. Una interrupción entre el 0x55 y el 0xAA rompería el desbloqueo.</li>
+<li>Una escritura tarda unos <b>10 ms</b>, muchísimo comparado con el microsegundo de una instrucción. Hay que esperar a que termine, comprobando el bit <b>WR</b> (que el hardware baja al acabar) o atendiendo la interrupción <b>EEIF</b>.</li>
+<li>La EEPROM tiene una vida limitada: del orden de <b>un millón de ciclos</b> de borrado y escritura por celda. Parece mucho, pero un programa que escriba cada segundo agota una celda en doce días. Por eso nunca se escribe en un bucle rápido: se escribe sólo cuando el dato <b>cambia</b>, y si hace falta se reparte el desgaste entre varias direcciones.</li>
+</ul></div>
+<details class="nom"><summary><span aria-hidden="true" class="nom-ic">Aa</span>Nomenclatura del tema 9 <span class="src">10 entradas</span></summary><div class="inner">
+<div class="tw"><table><tr><th>Símbolo</th><th>Significado</th><th>Unidad · nota</th></tr><tr><td class="sym">EEDATA</td><td>dato</td><td class="u">0x08 banco 0</td></tr><tr><td class="sym">EEADR</td><td>dirección</td><td class="u">0x09 banco 0</td></tr><tr><td class="sym">EECON1</td><td>control</td><td class="u">0x88 banco 1</td></tr><tr><td class="sym">EECON2</td><td>sólo para la secuencia</td><td class="u">0x89</td></tr><tr><td class="sym">RD</td><td>orden de lectura</td><td class="u"></td></tr><tr><td class="sym">WR</td><td>orden de escritura</td><td class="u">lo borra el hardware</td></tr><tr><td class="sym">WREN</td><td>permiso de escritura</td><td class="u"></td></tr><tr><td class="sym">0x55 / 0xAA</td><td>secuencia obligatoria</td><td class="u"></td></tr><tr><td class="sym">10 ms</td><td>duración de una escritura</td><td class="u"></td></tr><tr><td class="sym">10⁶</td><td>ciclos de vida por celda</td><td class="u"></td></tr></table></div></div></details>
+<figure class="fig"><p class="ft">Figura interactiva - secuencia de escritura en EEPROM y desgaste</p><div data-sim="eeprom"></div><figcaption>Mueve los controles y observa cómo cambia el resultado: es el mismo cálculo que hay que saber hacer a mano en el examen.</figcaption></figure>
+<h3 id="t9-formulas">Fórmulas y conceptos que hay que saber</h3>
+<div class="box key"><ul><li><b>Registros implicados:</b></li></ul>
+<div class="tw"><table><tr><th>Registro</th><th>Banco</th><th>Para qué</th></tr>
+<tr><td><b>EEDATA</b> (0x08)</td><td>0</td><td>dato leído o a escribir</td></tr>
+<tr><td><b>EEADR</b> (0x09)</td><td>0</td><td>dirección (0 a 63)</td></tr>
+<tr><td><b>EECON1</b> (0x88)</td><td>1</td><td>bits de control</td></tr>
+<tr><td><b>EECON2</b> (0x89)</td><td>1</td><td>sólo para la secuencia 0x55/0xAA</td></tr></table></div>
+<div class="tw"><table><tr><th>Bit de EECON1</th><th>Significado</th></tr>
+<tr><td><b>RD</b></td><td>se pone a 1 para leer; el hardware lo borra</td></tr>
+<tr><td><b>WR</b></td><td>se pone a 1 para escribir; el hardware lo borra <b>al terminar</b></td></tr>
+<tr><td><b>WREN</b></td><td>permiso de escritura: hay que ponerlo a 1 antes y a 0 después</td></tr>
+<tr><td><b>EEIF</b></td><td>aviso de fin de escritura (hay que borrarlo por software)</td></tr>
+<tr><td><b>WRERR</b></td><td>indica que una escritura terminó mal (reset o WDT)</td></tr></table></div>
+<ul><li><b>Lectura:</b></li></ul>
+<div class="code">        bcf     STATUS,RP0      ; banco 0
+        movlw   d'5'            ; dirección a leer
+        movwf   EEADR
+        bsf     STATUS,RP0      ; banco 1
+        bsf     EECON1,RD       ; orden de lectura
+        bcf     STATUS,RP0      ; banco 0
+        movf    EEDATA,0        ; W ← dato leído</div>
+<ul><li><b>Escritura (la secuencia es obligatoria y no admite cambios):</b></li></ul>
+<div class="code">        bcf     STATUS,RP0      ; banco 0
+        movlw   d'5'
+        movwf   EEADR           ; dirección
+        movf    VALOR,0
+        movwf   EEDATA          ; dato
+
+        bsf     STATUS,RP0      ; banco 1
+        bcf     INTCON,GIE      ; ¡deshabilitar interrupciones!
+        bsf     EECON1,WREN     ; permiso de escritura
+
+        movlw   0x55            ; -- SECUENCIA OBLIGATORIA --
+        movwf   EECON2
+        movlw   0xAA
+        movwf   EECON2
+        bsf     EECON1,WR       ; -- arranca la escritura --
+
+Espera  btfsc   EECON1,WR       ; el hardware borra WR al acabar
+        goto    Espera          ; (unos 10 ms)
+
+        bcf     EECON1,WREN     ; quita el permiso
+        bcf     EECON1,EEIF     ; borra el aviso
+        bsf     INTCON,GIE      ; rehabilita interrupciones
+        bcf     STATUS,RP0      ; banco 0</div>
+<ul>
+<li><b>Tiempo de escritura:</b> unos <b>10 ms</b> por byte. Escribir los 64 bytes seguidos lleva más de medio segundo.</li>
+<li><b>Resistencia:</b> del orden de \(10^6\) ciclos de escritura por celda y retención de datos de más de 40 años.</li>
+<li><b>Valor de fábrica:</b> una EEPROM virgen contiene 0xFF en todas sus posiciones. Conviene usar ese valor como «no inicializado».</li>
+</ul></div>
+<h3 id="t9-metodo">Método paso a paso</h3>
+<ol class="steps">
+<li><b>Para leer:</b> dirección en EEADR, <code>bsf EECON1,RD</code> en el banco 1, y recoger el dato de EEDATA en el banco 0.</li>
+<li><b>Para escribir:</b> carga dirección y dato, <b>deshabilita GIE</b>, activa WREN, haz la secuencia 0x55/0xAA, activa WR y espera a que el hardware lo borre.</li>
+<li><b>Limpia después:</b> borra WREN y EEIF y rehabilita GIE.</li>
+<li><b>Escribe sólo cuando el dato cambie:</b> lee primero, compara, y escribe únicamente si es distinto. Eso multiplica la vida de la memoria.</li>
+<li><b>Al arrancar</b>, lee la configuración de la EEPROM; si vale 0xFF, es la primera vez y hay que cargar los valores por defecto.</li>
+<li><b>Vigila los bancos:</b> EEDATA y EEADR están en el 0, EECON1 y EECON2 en el 1. Esta rutina cruza de banco varias veces.</li>
+</ol>
+<div class="box trap"><h4>Trampas típicas</h4><ul>
+<li><b>Alterar la secuencia 0x55/0xAA</b> o meter instrucciones entre medias. La escritura simplemente no ocurre, sin ningún aviso.</li>
+<li>No deshabilitar las interrupciones durante la secuencia.</li>
+<li>Olvidar <b>WREN</b>: sin permiso, el bit WR no hace nada.</li>
+<li>No esperar a que termine la escritura y lanzar otra inmediatamente.</li>
+<li>Confundir los bancos: EECON1 está en el <b>banco 1</b> y EEDATA en el <b>0</b>.</li>
+<li>Escribir en la EEPROM dentro del bucle principal. A 10 ms por escritura y un millón de ciclos, se agota en semanas.</li>
+<li>Usar direcciones por encima de 63: sólo hay 64 bytes.</li>
+<li>Olvidar que una EEPROM nueva está a 0xFF y leerla como si tuviera datos válidos.</li>
+</ul></div>
+<h3 id="t9-problema">Problema resuelto</h3>
+<div class="prob"><div class="enun"><p class="et">Enunciado</p><p>Un sistema debe recordar, entre apagados, cuántas veces se ha pulsado un botón. El contador se guarda en la EEPROM y se muestra en dos displays.</p>
+<ol><li>Escribe las rutinas de lectura y escritura.</li>
+<li>Diseña la lógica para que la EEPROM no se desgaste.</li>
+<li>¿Cuánto duraría la memoria si se escribiera en cada vuelta del bucle principal?</li></ol></div>
+<details class="paso"><summary><span class="pn">✓</span>Ver solución paso a paso</summary><div class="inner"><p><b>1) Las rutinas.</b></p>
+<div class="code">; ---- Lee la posición W de la EEPROM y devuelve el dato en W
+LeeEE   bcf     STATUS,RP0
+        movwf   EEADR
+        bsf     STATUS,RP0
+        bsf     EECON1,RD
+        bcf     STATUS,RP0
+        movf    EEDATA,0
+        return
+
+; ---- Escribe VALOR en la posición DIR de la EEPROM
+EscEE   bcf     STATUS,RP0
+        movf    DIR,0
+        movwf   EEADR
+        movf    VALOR,0
+        movwf   EEDATA
+
+        bsf     STATUS,RP0
+        bcf     INTCON,GIE          ; interrupciones fuera
+        bsf     EECON1,WREN         ; permiso
+
+        movlw   0x55                ; --- secuencia obligatoria
+        movwf   EECON2
+        movlw   0xAA
+        movwf   EECON2
+        bsf     EECON1,WR           ; --- arranca (≈10 ms)
+
+EspEE   btfsc   EECON1,WR
+        goto    EspEE               ; espera a que el hardware borre WR
+
+        bcf     EECON1,WREN
+        bcf     EECON1,EEIF
+        bsf     INTCON,GIE
+        bcf     STATUS,RP0
+        return</div>
+<p><b>2) Evitar el desgaste.</b> La clave está en <b>escribir sólo cuando el dato cambia</b>, y además no en cada incremento:</p>
+<div class="code">Inicio  movlw   d'0'
+        call    LeeEE               ; recupera el contador guardado
+        movwf   CUENTA
+        xorlw   0xFF                ; ¿vale 0xFF (memoria virgen)?
+        btfsc   STATUS,Z
+        clrf    CUENTA              ; sí: primera vez, empieza en 0
+
+Bucle   call    LeerBoton
+        btfss   BANDERA,0           ; ¿hubo pulsación?
+        goto    Bucle
+
+        incf    CUENTA,1            ; cuenta en RAM, no en EEPROM
+        bcf     BANDERA,0
+        bsf     BANDERA,1           ; marca «hay cambio pendiente»
+        goto    Bucle</div>
+<p>Y la escritura se hace <b>sólo</b> en dos momentos: cuando han pasado unos segundos sin pulsaciones nuevas, o cuando un detector de bajada de tensión avisa de un apagón inminente. Ese es el diseño real: <b>contar en RAM y volcar a EEPROM lo menos posible</b>.</p>
+<p>Si el sistema no puede detectar el apagón, un compromiso razonable es volcar cada \(N\) pulsaciones (por ejemplo cada 10) y aceptar que, en el peor caso, se pierdan las nueve últimas.</p>
+<p><b>3) Cuánto duraría escribiendo siempre.</b> Supongamos un bucle principal que da una vuelta cada 10 ms (el tiempo que tarda la propia escritura):</p>
+\[\text{escrituras al día}=\frac{86\,400\ \text{s}}{0{,}010\ \text{s}}=8\,640\,000\]
+\[\text{duración}=\frac{10^{6}\ \text{ciclos}}{8\,640\,000\ \text{/día}}=0{,}116\ \text{días}=\boxed{2{,}8\ \text{horas}}\]
+<p>La memoria quedaría destruida <b>en menos de tres horas</b>. Con la estrategia correcta, escribiendo una vez por pulsación y suponiendo cien pulsaciones al día:</p>
+\[\frac{10^{6}}{100}=10\,000\ \text{días}=\boxed{27\ \text{años}}\]
+<div class="box key"><p>La diferencia entre las dos cifras, <b>tres horas frente a veintisiete años</b>, es toda la lección del tema. La EEPROM no es RAM lenta: es un recurso que se gasta, y el diseño debe tratarla como tal.</p></div></div></details></div>
+<h3 id="t9-auto">Autoevaluación</h3>
+<p class="muted">Responde antes de desplegar.</p><details class="paso"><summary><span class="pn">1</span>¿Cuánta EEPROM de datos tiene el PIC16F84A?</summary><div class="inner"><p><b>64 bytes</b> no volátiles, direcciones 0 a 63.</p></div></details><details class="paso"><summary><span class="pn">2</span>¿Qué cuatro registros intervienen?</summary><div class="inner"><p>EEDATA y EEADR (banco 0), EECON1 y EECON2 (banco 1).</p></div></details><details class="paso"><summary><span class="pn">3</span>¿Cuál es la secuencia obligatoria de escritura?</summary><div class="inner"><p>Escribir <b>0x55</b> y luego <b>0xAA</b> en EECON2 y, a continuación, poner a 1 el bit WR.</p></div></details><details class="paso"><summary><span class="pn">4</span>¿Por qué existe esa secuencia?</summary><div class="inner"><p>Para que un programa descontrolado o un pico de tensión no puedan corromper la memoria por accidente.</p></div></details><details class="paso"><summary><span class="pn">5</span>¿Por qué hay que deshabilitar las interrupciones durante la escritura?</summary><div class="inner"><p>Porque una interrupción entre el 0x55 y el 0xAA rompería el desbloqueo y la escritura no ocurriría.</p></div></details><details class="paso"><summary><span class="pn">6</span>¿Cuánto tarda una escritura y cómo se sabe que acabó?</summary><div class="inner"><p>Unos <b>10 ms</b>; el hardware <b>borra el bit WR</b> al terminar (o activa EEIF).</p></div></details><details class="paso"><summary><span class="pn">7</span>¿Cuántos ciclos de escritura soporta y qué implica?</summary><div class="inner"><p>Del orden de <b>un millón</b> por celda: hay que escribir sólo cuando el dato cambie, nunca en un bucle rápido.</p></div></details>
+</section>
+<nav class="pager" aria-label="Páginas"><a href="tema-08.html"><small>← Anterior</small>T8 · Interrupciones</a><a class="nx" href="cuestiones.html"><small>Siguiente →</small>Cuestiones de teoría</a></nav>
+<p class="inicio" style="margin:36px 0 8px;text-align:center;font-size:13px;color:var(--muted)">Guía no oficial de Sistemas basados en Microprocesador (UPCT, GIEyA) · Datos tomados del curso <time datetime="2020-09">2020/21</time> (apuntes de la asignatura, programas de teoría comentados, ejercicios de entrega y la práctica final del ascensor) · página creada en noviembre de 2026</p>
+</main>
+</div>
+<script src="app.js"></script>
+<script src="sims.js"></script>
+</body>
+</html>
