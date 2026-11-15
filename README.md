@@ -1,6 +1,6 @@
 # Sistemas basados en Microprocesador · Guía para aprobar
 
-Guía de estudio no oficial de **Sistemas basados en Microprocesador** (Grado en Ingeniería Electrónica y Automática, UPCT), construida a partir del material de la asignatura: apuntes, programas de teoría comentados, ejercicios de entrega y la práctica final del ascensor.
+Guía de estudio no oficial de **Sistemas basados en Microprocesador** (Grado en Ingeniería Electrónica y Automática), construida a partir del material de la asignatura: apuntes, programas de teoría comentados, ejercicios de entrega y la práctica final del ascensor.
 
 ## Qué contiene
 
@@ -15,4 +15,4 @@ Las páginas son HTML estático sin dependencias. Abre `index.html` o publícalo
 
 ---
 
-No es material oficial de la UPCT. Comprueba siempre la guía docente del curso vigente.
+No es material oficial de la universidad. Comprueba siempre la guía docente del curso vigente.
