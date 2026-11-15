@@ -90,6 +90,53 @@ Espera  btfss   INTCON,T0IF     ; ¿se ha desbordado?
 <li>Pedir un tiempo mayor que el máximo alcanzable y obtener un \(n\) negativo. Entonces hay que contar varios desbordamientos.</li>
 <li>Olvidar que escribir en TMR0 <b>borra el preescalador</b> y hace perder dos ciclos.</li>
 </ul></div>
+<h3 id="t5-retardo-paso">Retardo de 1 ms con TMR0, paso a paso</h3>
+<p>TMR0 cuenta impulsos de reloj divididos por el prescaler. Con una precarga adecuada, el desbordamiento marca exactamente el tiempo que se quiere esperar.</p>
+<figure class="fig"><p class="ft">Figura interactiva · retardo de 1 ms con PIC16F84A, F_osc = 4 MHz, prescaler 1:8</p>
+<div id="tmr-paso" style="font-family:system-ui,sans-serif"><input id="tmr-paso-s" type="range" min="0" max="6" step="1" value="0" style="width:100%"><div id="tmr-paso-l" style="font-size:13px;color:#56635e;margin:4px 0">paso de la resolución (0 = problema): 0</div><canvas id="tmr-paso-c" width="640" height="260" style="width:100%;max-width:640px;height:auto;display:block"></canvas><div id="tmr-paso-t" style="font-size:15px;line-height:1.5;margin-top:8px;min-height:90px"></div></div>
+<figcaption>Sube el paso: se obtiene el ciclo de instrucción, el periodo de incremento de TMR0, las cuentas necesarias y la precarga.</figcaption></figure>
+<div class="box trap"><h4>Trampas típicas</h4><ul><li>Usar F_osc en lugar de F_osc/4 como reloj de instrucción.</li><li>Olvidar el prescaler al calcular el periodo de incremento.</li><li>Precargar con el número de cuentas en lugar de 256 menos ese número.</li></ul></div>
+<script>
+(function(){
+  var T=[
+   'Retardo de 1 ms con el PIC16F84A, F_osc = 4 MHz, TMR0 de 8 bits y prescaler 1:8 asignado a TMR0. Se pide el valor de precarga de TMR0.',
+   'Ciclo de instrucción: T_cy = 4 / F_osc = 4 / 4 MHz = 1 µs. Cada instrucción tarda un ciclo de 1 µs.',
+   'TMR0 incrementa cada T_cy · P = 1 µs · 8 = 8 µs, porque el prescaler divide la frecuencia de incremento entre 8.',
+   'Cuentas necesarias: 1 ms / 8 µs = 125 incrementos. TMR0 debe pasar por 125 valores antes de desbordar.',
+   'Precarga: TMR0 empieza en 256 − 125 = 131 (0x83). Tras 125 incrementos llega a 256 y se activa T0IF (desbordamiento).',
+   'Uso: se escribe TMR0 = 131, se espera a que T0IF = 1 y se pone T0IF = 0. Escribir TMR0 consume ciclos, así que en un programa real se ajusta la precarga con ese retraso.',
+   'Comprobación: 125 · 8 µs = 1000 µs = 1 ms ✓. Ese es el retardo buscado.'
+  ];
+  var cv=document.getElementById('tmr-paso-c'), g=cv.getContext('2d'), sl=document.getElementById('tmr-paso-s'),
+      lb=document.getElementById('tmr-paso-l'), tx=document.getElementById('tmr-paso-t');
+  function txt(s,x,y,col,sz,al){g.fillStyle=col;g.font=(sz||12)+'px system-ui,sans-serif';g.textAlign=al||'left';g.fillText(s,x,y);}
+  function box(x,y,w,h,label,col,fill){g.fillStyle=fill;g.strokeStyle=col;g.lineWidth=1.5;g.fillRect(x,y,w,h);g.strokeRect(x,y,w,h);txt(label,x+w/2,y+h/2+4,col,12,'center');}
+  function arr(x1,x2,y,col){g.strokeStyle=col;g.lineWidth=1.8;g.beginPath();g.moveTo(x1,y);g.lineTo(x2,y);g.stroke(); g.fillStyle=col;g.beginPath();g.moveTo(x2,y);g.lineTo(x2-7,y-4);g.lineTo(x2-7,y+4);g.fill();}
+  function draw(p){
+    g.clearRect(0,0,cv.width,cv.height);
+    // cadena de reloj
+    if(p>=1){ box(20,40,120,40,'F_osc 4 MHz','#3a63c4','rgba(58,99,196,0.10)');
+      arr(140,170,60,'#56635e'); box(170,40,120,40,'÷4 → T_cy = 1 µs','#3a63c4','rgba(58,99,196,0.10)'); }
+    if(p>=2){ arr(290,320,60,'#56635e'); box(320,40,120,40,'prescaler ÷8','#b8730c','rgba(184,115,12,0.10)');
+      arr(440,470,60,'#56635e'); box(470,40,150,40,'TMR0: +1 cada 8 µs','#b4232f','rgba(180,35,47,0.10)'); }
+    // registro TMR0: 256 celdas, de 131 a 255 se cuentan
+    var X0=40, CW=2.0, Y=150, H=36;
+    txt('TMR0 (8 bits)',X0,Y-10,'#16211d',12,'left');
+    for(var v=0; v<256; v++){ var x=X0+v*CW;
+      var counted = (p>=3 && v>=131);
+      g.fillStyle = counted ? 'rgba(180,35,47,0.45)' : 'rgba(138,149,143,0.18)';
+      g.fillRect(x,Y,CW-0.4,H); }
+    txt('0',X0,Y+H+14,'#56635e',11,'left'); txt('131',X0+131*CW,Y+H+14,'#b4232f',11,'left'); txt('255',X0+255*CW,Y+H+14,'#56635e',11,'right');
+    if(p>=4){ txt('precarga = 131 (0x83)',X0+131*CW,Y-22,'#b4232f',12,'left'); txt('125 incrementos',X0+193*CW,Y+H+30,'#b4232f',12,'center'); }
+    if(p>=4){ g.strokeStyle='#16211d';g.lineWidth=2;g.beginPath();g.moveTo(X0+256*CW+2,Y-6);g.lineTo(X0+256*CW+2,Y+H+6);g.stroke();
+      txt('T0IF',X0+256*CW-4,Y-12,'#16211d',11,'center'); }
+    lb.textContent='paso de la resolución (0 = problema): '+p;
+    tx.innerHTML='<div>'+T[p]+'</div>';
+  }
+  sl.addEventListener('input',function(){draw(+sl.value);});
+  draw(0);
+})();
+</script>
 <h3 id="t5-problema">Problema resuelto</h3>
 <div class="prob"><div class="enun"><p class="et">Enunciado</p><p>Un PIC16F84A a 4 MHz debe generar en RB0 una onda cuadrada de <b>10 Hz</b> usando el TMR0.</p>
 <ol><li>¿Qué preescalador y qué valor de precarga hacen falta?</li>
