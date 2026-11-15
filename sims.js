@@ -519,7 +519,29 @@ SIMS.multiplexado=el=>build(el,{w:680,h:290,
   a.txt(s.fr>=50?'sin parpadeo visible':'¡se ve parpadear!',bx,by+178,s.fr>=50?C.c:C.d,11.5);
   a.html('Los '+s.N+' displays <b>comparten</b> las siete líneas de segmentos y cada uno tiene su habilitación. Se enciende uno cada '+N2(tdig*1000)+' ms y, si el ciclo completo se repite más de <b>50 veces por segundo</b>, el ojo los ve todos encendidos.<br>El precio es el <b>brillo</b>: cada dígito luce sólo el '+N0(100/s.N)+' % del tiempo. Baja la frecuencia por debajo de 50 Hz y verás por qué ese es el límite.');
  }});
-  document.querySelectorAll('[data-sim]').forEach(function(el){
+  
+
+
+/* ---- paso a paso declarativo ---- */
+SIMS.__paso=(el,D)=>build(el,{w:D.w||660,h:D.h||340,
+ sliders:[{k:'paso',v:0,min:0,max:D.steps.length,step:1,l:'paso de la resolución (0 = enunciado)',u:''}],
+ draw(a){a.clear();const g=a.g,p=a.st.paso;
+  const it=(x,col)=>{const k=x[0];
+   if(k==='t')a.txt(x[1],x[2],x[3],col,x[4]||13,x[5]||'left');
+   else if(k==='l')a.line(x[1],x[2],x[3],x[4],col,x[5]||1.5,x[6]);
+   else if(k==='a')a.arrow(x[1],x[2],x[3],x[4],col,x[5]);
+   else if(k==='c')a.circ(x[1],x[2],x[3],col,!!x[4]);
+   else if(k==='r'){g.strokeStyle=col;g.lineWidth=1.8;if(x[5]){g.fillStyle=col;g.globalAlpha=.18;g.fillRect(x[1],x[2],x[3],x[4]);g.globalAlpha=1;}g.strokeRect(x[1],x[2],x[3],x[4]);}
+   else if(k==='p'){g.strokeStyle=col;g.lineWidth=x[2]||2;g.beginPath();x[1].forEach((q,i)=>i?g.lineTo(q[0],q[1]):g.moveTo(q[0],q[1]));g.stroke();}};
+  (D.base||[]).forEach(x=>it(x,C.muted));
+  D.steps.forEach((s,i)=>{if(i+1>p)return;const cur=(i+1===p);(s.add||[]).forEach(x=>it(x,cur?C.d:C.text));if(cur)(s.now||[]).forEach(x=>it(x,C.d));});
+  a.html('<div>'+(p===0?D.q:D.steps[p-1].text)+'</div>');}});
+/* ---- fin paso a paso declarativo ---- */
+
+/* ---- paso2 retardoPaso ---- */
+SIMS.retardoPaso=el=>SIMS.__paso(el,{"w":660,"h":310,"q":"Se quiere un retardo de <b>500 µs</b> con un bucle de <b>decfsz + goto</b> en un PIC a 4 MHz. ¿Qué valor N hay que cargar en el contador? Sube el paso.","base":[["t","PIC16F84A a 4 MHz · retardo de 500 µs con un solo bucle",30,26,13,"left"]],"steps":[{"text":"Con un cristal de 4 MHz, cada ciclo de instrucción dura <b>Tcy = 4/Fosc = 1 µs</b>. Contar microsegundos equivale a contar ciclos de reloj de instrucción.","add":[["t","Tcy = 4 / 4 MHz = 1 µs",40,70,15,"left"]]},{"text":"Parte fija: <b>call</b> 2 ciclos, <b>movlw</b> 1, <b>movwf</b> 1 y <b>return</b> 2 → 2 + 1 + 1 + 2 = <b>6 ciclos</b>, que no dependen de N.","add":[["t","fijo: 2 + 1 + 1 + 2 = 6 ciclos",40,100,14,"left"]]},{"text":"Cada vuelta del bucle son <b>3 ciclos</b>: decfsz (1) + goto (2). La última vuelta solo cuesta 2 (decfsz salta y no ejecuta el goto). Con N vueltas: <b>3(N−1) + 2 = 3N − 1</b>.","add":[["t","bucle: 3(N−1) + 2 = 3N − 1",40,130,14,"left"]]},{"text":"Tiempo total: <b>T = 3N − 1 + 6 = 3N + 5</b> ciclos. Con Tcy = 1 µs, T [µs] = 3N + 5.","add":[["t","T = 3N + 5  [µs]",40,160,16,"left"]]},{"text":"Para <b>T = 500 µs</b>: N = (500 − 5)/3 = <b>165</b>, que en hexadecimal es <b>0xA5</b>. Se carga con movlw 0xA5. Es un entero exacto, luego el retardo es justo.","add":[["t","N = (500 − 5)/3 = 165 = 0xA5",40,190,15,"left"],["r",40.0,236,376.62337662337666,26,1],["t","500 µs",228.31168831168833,254,12,"center"]]},{"text":"Límite del método: N máximo = 255 (cnt de 8 bits) → T máx = 3·255 + 5 = <b>770 µs</b>. Para retardos mayores (por ejemplo 1 ms o 1 s) se anidan dos o tres bucles o se usa el TMR0.","add":[["t","N máx = 255 → T máx = 770 µs",40,220,14,"left"],["r",40.0,270,580.0,26,1],["t","770 µs",330.0,288,12,"center"]]}]});
+/* ---- fin paso2 retardoPaso ---- */
+document.querySelectorAll('[data-sim]').forEach(function(el){
     var k=el.getAttribute('data-sim'); if(SIMS[k]){ try{ SIMS[k](el); }catch(e){ console.error('sim '+k, e); } }
   });
 })();
