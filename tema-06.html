@@ -17,24 +17,64 @@
 <style id="lectura">
 @media screen{
 :root{--body:"Atkinson Hyperlegible Next","Atkinson Hyperlegible","Segoe UI",system-ui,-apple-system,sans-serif}
-body{font-family:var(--body);font-size:20.5px;line-height:2.1;letter-spacing:.022em;word-spacing:.09em}
-p{margin:0 0 1.75em}
-li{margin:.8em 0}
-p,li{max-width:62ch}
+body{font-family:var(--body);font-size:20px;line-height:1.95;letter-spacing:.014em;word-spacing:.05em}
+p{margin:0 0 1.5em;max-width:64ch;hyphens:auto;-webkit-hyphens:auto}
+li{margin:.72em 0;max-width:64ch}
 .box p:last-child,.box ul:last-child,.box ol:last-child{margin-bottom:0}
-h2{margin-top:92px;margin-bottom:24px;line-height:1.3}
-h3{font-size:24px;margin:58px 0 18px;line-height:1.35}
-h4{margin-top:34px;margin-bottom:10px}
-.box{padding:24px 30px;margin:32px 0}
-table{font-size:18px;line-height:1.75}
-td,th{padding-top:.85em;padding-bottom:.85em}
-figure.fig figcaption{font-size:17px;line-height:1.8;margin-top:12px}
+h2{margin-top:92px;margin-bottom:22px;line-height:1.25}
+h3{font-size:25px;margin:66px 0 20px;line-height:1.3}
+h4{margin:38px 0 12px;line-height:1.4}
+/* ---- entradilla con capitular ---- */
+.zero .lede{font-size:1.05em;line-height:1.86;text-align:left}
+.zero .lede::first-letter{float:left;font-size:3.05em;line-height:.84;font-weight:700;padding:.06em .14em 0 0;color:var(--tc,var(--accent))}
+/* ---- sumario del tema ---- */
+p.obj{max-width:none;text-align:left;margin:0 0 1.7em;padding:14px 20px;border-radius:10px;
+ background:color-mix(in srgb,var(--surface) 62%,transparent);
+ border-left:3px solid var(--tc,var(--accent));font-size:.95em;line-height:1.75}
+p.obj>b:first-child{display:block;font:700 11.5px/1.7 var(--mono,monospace);letter-spacing:.1em;
+ text-transform:uppercase;color:var(--tc,var(--accent))}
+/* ---- términos con entrada, al modo de un manual ---- */
+p.run{margin:0 0 1.38em}
+p.run>b:first-child{display:block;font:700 12px/1.7 var(--mono,monospace);letter-spacing:.09em;
+ text-transform:uppercase;color:var(--tc,var(--accent))}
+/* ---- rótulos internos ---- */
+.zero>.ft{font:700 11.5px/1.6 var(--mono,monospace);letter-spacing:.1em;text-transform:uppercase}
+.zero>.ft:not(:first-child){margin-top:2em;font-size:12.5px;color:var(--fg);opacity:.72}
+/* ---- desarrollo teórico ---- */
+.deep h4{position:relative;padding-left:2.35em;font-size:1.03em}
+.deep h4 .hn{position:absolute;left:0;top:.06em;font:700 .84em/1.7 var(--mono,monospace);
+ color:var(--tc,var(--accent));opacity:.8}
+.deep>h4:not(:first-child){border-top:1px solid var(--line);padding-top:30px;margin-top:42px}
+.eqd{margin:1.65em 0;text-align:center;overflow-x:auto;overflow-y:hidden}
+/* ---- notas al margen, sin duplicar el rótulo ---- */
+.box.deepnote{padding:15px 20px;margin:1.5em 0;border-radius:0 10px 10px 0;
+ background:color-mix(in srgb,var(--surface) 76%,transparent)}
+.box.key.deepnote::before,.box.trap.deepnote::before{content:none}
+.box.deepnote>b:first-child{display:block;font:700 11.5px/1.7 var(--mono,monospace);
+ letter-spacing:.1em;text-transform:uppercase;color:var(--tc,var(--accent))}
+.box.trap.deepnote>b:first-child{color:var(--warn)}
+/* ---- resto ---- */
+.box{padding:22px 28px;margin:30px 0}
+table{font-size:18px;line-height:1.7}
+td,th{padding-top:.8em;padding-bottom:.8em}
+figure.fig figcaption{font-size:17px;line-height:1.78;margin-top:12px}
 figure.fig{margin-block:34px}
-.lede{line-height:1.85}
 .toc a{font-size:15.5px;padding:8px 0 8px 10px}
 svg,svg text,canvas,.katex,mjx-container{letter-spacing:normal;word-spacing:normal}
+mjx-container[display]{margin:0!important}
 details>summary{line-height:1.7;padding-block:.5em}
-@media (max-width:600px){body{font-size:19px;line-height:2}}
+.enun p,.inner p{text-align:left}
+@media (min-width:1040px){
+p,li{text-align:justify}
+.zero .lede,.enun p,.inner p,figcaption,.ft{text-align:left}
+}
+@media (max-width:600px){
+body{font-size:18.5px;line-height:1.9}
+p{text-align:left}
+.zero .lede::first-letter{font-size:2.6em}
+.deep h4{padding-left:0}
+.deep h4 .hn{position:static;margin-right:.5em}
+}
 }
 </style>
 </head>
@@ -46,7 +86,7 @@ details>summary{line-height:1.7;padding-block:.5em}
 <main>
 <section class="sec tema" style="--tc:var(--c7);--tcs:var(--c7s)">
 <div class="sh"><span aria-hidden="true" class="badge">6</span><div class="shx"><p class="kick">Recursos y aplicaciones · Tema 6</p><h2 id="t6">Puertas de entrada y salida</h2><div class="tags"><span class="tag">Recursos y aplicaciones</span><span class="tag">Periféricos</span></div></div></div>
-<div class="zero"><p class="ft">Desde cero</p><p><b>Objetivo:</b> configurar los puertos con los registros TRIS, leer entradas con seguridad y gobernar cargas respetando los límites eléctricos del PIC.</p><ul>
+<div class="zero"><p class="ft">Desde cero</p><p class="obj"><b>Objetivo:</b> configurar los puertos con los registros TRIS, leer entradas con seguridad y gobernar cargas respetando los límites eléctricos del PIC.</p><ul>
 <li>El PIC16F84A tiene dos puertas: <b>PORTA</b> con 5 patillas (RA0 a RA4) y <b>PORTB</b> con 8 (RB0 a RB7). Cada patilla puede ser entrada o salida, y se decide <b>bit a bit</b>.</li>
 <li>Quien lo decide es el registro <b>TRIS</b> correspondiente, en el banco 1: un <b>1</b> configura la patilla como <b>entrada</b> y un <b>0</b> como <b>salida</b>. La regla nemotécnica que se usa siempre: <b>1 = Input, 0 = Output</b>.</li>
 <li>Tras un <i>reset</i>, todos los TRIS valen 0xFF, es decir, <b>todas las patillas son entradas</b>. Si no configuras nada, el programa no saca nada por ningún sitio.</li>
@@ -60,8 +100,8 @@ details>summary{line-height:1.7;padding-block:.5em}
 <details class="nom"><summary><span aria-hidden="true" class="nom-ic">Aa</span>Nomenclatura del tema 6 <span class="src">9 entradas</span></summary><div class="inner">
 <div class="tw"><table><tr><th>Símbolo</th><th>Significado</th><th>Unidad · nota</th></tr><tr><td class="sym">TRISA / TRISB</td><td>dirección de las patillas</td><td class="u">banco 1</td></tr><tr><td class="sym">1 = entrada</td><td>0 = salida</td><td class="u"></td></tr><tr><td class="sym">PORTA / PORTB</td><td>dato de las patillas</td><td class="u">banco 0</td></tr><tr><td class="sym">RBPU</td><td>pull-up de PORTB</td><td class="u">0 = activados</td></tr><tr><td class="sym">RA4</td><td>drenador abierto</td><td class="u">necesita pull-up</td></tr><tr><td class="sym">25 mA</td><td>máximo por patilla</td><td class="u"></td></tr><tr><td class="sym">100 mA</td><td>máximo de PORTB</td><td class="u"></td></tr><tr><td class="sym">ULN2803</td><td>8 Darlington</td><td class="u">cargas mayores</td></tr><tr><td class="sym">variable espejo</td><td>evita lectura-modificación-escritura</td><td class="u"></td></tr></table></div></div></details>
 <figure class="fig"><p class="ft">Figura interactiva - TRIS, PORT y limites de corriente</p><div data-sim="puertos"></div><figcaption>Mueve los controles y observa cómo cambia el resultado: es el mismo cálculo que hay que saber hacer a mano en el examen.</figcaption></figure>
-<!--amp1--><div class="zero" style="margin-top:14px"><p class="ft">Explicación ampliada</p><p class="ft">Entradas y salidas con TRIS</p><p>Cada patilla de PORTA y PORTB puede ser entrada o salida. La dirección se elige en los registros <b>TRISA</b> y <b>TRISB</b> (banco 1): un <b>1</b> es <b>I</b>nput (entrada) y un <b>0</b> es <b>O</b>utput (salida): «1 se parece a I, 0 se parece a O». Para escribir en una salida se usa PORTx; para leer una entrada también PORTx (no el TRIS). Configuración típica: pasar al banco 1, escribir TRISx, y volver al banco 0. Si quieres RB0–RB3 como salidas y RB4–RB7 como entradas, \(TRISB=b'11110000'=0xF0\). El PORTB incluye resistencias de <b>pull-up</b> internas que se activan con el bit RBPU de OPTION (a 0): así un pulsador a masa no necesita resistencia externa.</p><p class="ft">Límites eléctricos: LEDs y corrientes</p><p>Un pin del PIC16F84A puede dar o absorber como máximo 25 mA, y hay un tope por puerta (PORTB: 100 mA como fuente, 150 mA como sumidero). Un LED siempre lleva una <b>resistencia</b> en serie: \(R=\dfrac{V_{DD}-V_{LED}}{I_{LED}}\); se elige el valor normalizado superior para no pasarse de corriente. Si el LED se enciende «dando» corriente por el pin, el pin no llega a \(V_{DD}\) sino a \(V_{OH}\ge V_{DD}-0{,}7\) V en el peor caso; si se enciende «absorbiendo», el pin baja hasta \(V_{OL}\le0{,}6\) V. En el diseño conviene calcular con el peor caso y comprobar que la suma de corrientes de una puerta no supera su límite.</p></div><!--/amp1--><!--deep--><h3 id="t6-profundiza">Desarrollo teórico a fondo</h3><div class="deep">
-<h4>1. Puertos de entrada y salida</h4>
+<!--amp1--><div class="zero" style="margin-top:14px"><p class="ft">Explicación ampliada</p><p class="ft">Entradas y salidas con TRIS</p><p class="lede">Cada patilla de PORTA y PORTB puede ser entrada o salida. La dirección se elige en los registros <b>TRISA</b> y <b>TRISB</b> (banco 1): un <b>1</b> es <b>I</b>nput (entrada) y un <b>0</b> es <b>O</b>utput (salida): «1 se parece a I, 0 se parece a O». Para escribir en una salida se usa PORTx; para leer una entrada también PORTx (no el TRIS). Configuración típica: pasar al banco 1, escribir TRISx, y volver al banco 0. Si quieres RB0–RB3 como salidas y RB4–RB7 como entradas, \(TRISB=b'11110000'=0xF0\). El PORTB incluye resistencias de <b>pull-up</b> internas que se activan con el bit RBPU de OPTION (a 0): así un pulsador a masa no necesita resistencia externa.</p><p class="ft">Límites eléctricos: LEDs y corrientes</p><p>Un pin del PIC16F84A puede dar o absorber como máximo 25 mA, y hay un tope por puerta (PORTB: 100 mA como fuente, 150 mA como sumidero). Un LED siempre lleva una <b>resistencia</b> en serie: \(R=\dfrac{V_{DD}-V_{LED}}{I_{LED}}\); se elige el valor normalizado superior para no pasarse de corriente. Si el LED se enciende «dando» corriente por el pin, el pin no llega a \(V_{DD}\) sino a \(V_{OH}\ge V_{DD}-0{,}7\) V en el peor caso; si se enciende «absorbiendo», el pin baja hasta \(V_{OL}\le0{,}6\) V. En el diseño conviene calcular con el peor caso y comprobar que la suma de corrientes de una puerta no supera su límite.</p></div><!--/amp1--><!--deep--><h3 id="t6-profundiza">Desarrollo teórico a fondo</h3><div class="deep">
+<h4><span class="hn">1</span>Puertos de entrada y salida</h4>
 <div class="box key deepnote"><b>Idea clave.</b> un puerto es un conjunto de pines que se configuran como entrada o salida. Cada bit del registro TRIS decide la dirección de un pin.</div>
 <ul><li><b>TRISx</b>: 1 = entrada, 0 = salida.</li><li><b>PORTx</b>: lee el estado de los pines (entrada) o escribe en ellos (salida).</li><li><b>Corriente</b> máxima por pin: limitada. Para cargas grandes, usa un transistor o un relé.</li></ul>
 <details class="dem"><summary><span class="pn">∴</span>Lectura de un pulsador</summary><div class="inner"><p>Un pulsador conectado a masa con una resistencia de pull-up da 0 al pulsarse. Hay que eliminar los rebotes con un retardo o con software antirrebote.</p>
