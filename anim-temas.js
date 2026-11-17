@@ -79,14 +79,12 @@ M.reg('sbm-t8',M.base({title:'Interrupciones: del programa principal a la rutina
   if(X>xi)D.text('push',xi+16,(y1+y2)/2,{s:13,c:C.hl});if(X>xr)D.text('RETFIE',xr+16,(y1+y2)/2,{s:13,c:C.hl});U.readout(D,[lab],470);}));
 
 /* T9 escritura en EEPROM */
-M.reg('sbm-t9',M.pasos({title:'Escribir en la EEPROM de datos',H:580,dur:22,y0:105,gap:44,lines:[
- {s:'MOVLW dir  →  MOVWF EEADR          ; dirección (0–63)',it:false,size:16,a:'left',x:50},
- {s:'MOVLW dato  →  MOVWF EEDATA       ; dato a escribir',it:false,size:16,a:'left',x:50},
- {s:'BSF STATUS,RP0  ;  BSF EECON1,WREN   ; permitir escritura',it:false,size:16,a:'left',x:50},
- {s:'BCF INTCON,GIE                      ; sin interrupciones',it:false,size:16,a:'left',x:50,c:'hl'},
- {s:'MOVLW 55h → EECON2;  MOVLW AAh → EECON2',it:false,size:16,a:'left',x:50,c:'hl'},
- {s:'BSF EECON1,WR                        ; ¡arranca!',it:false,size:16,a:'left',x:50,c:'m'},
- {s:'esperar EEIF = 1 (unos 10 ms) y borrarlo',it:false,size:16,a:'left',x:50},
- {s:'BCF EECON1,WREN;  BSF INTCON,GIE',it:false,size:16,a:'left',x:50},
- {s:'La secuencia 55h–AAh protege contra escrituras accidentales',it:false,size:15,a:'left',x:50,c:'mut'}]}));
+var EE=[['EEADR ← dir',0],['EEDATA ← dato',0],['WREN = 1',1],['GIE = 0',2],['EECON2 ← 55h',3],['EECON2 ← AAh',3],['WR = 1',4],['… escribiendo ~10 ms',5],['EEIF = 1',6],['WREN = 0, GIE = 1',7]];
+M.reg('sbm-t9',M.base({title:'Escribir en la EEPROM de datos',H:600,dur:22,caps:[[7,'Se cargan la dirección (EEADR) y el dato (EEDATA), y se habilita la escritura con WREN.'],[14,'Con las interrupciones desactivadas se escribe la secuencia 55h y AAh en EECON2 y se pone WR = 1: protege contra escrituras accidentales.'],[99,'La celda tarda unos 10 ms en grabarse. Al terminar, WR vuelve a 0 y se activa EEIF. Después se desactiva WREN y se reactivan las interrupciones.']]},
+ function(D,t){var k=Math.min(EE.length-1,Math.floor(seg(t,0.5,20)*EE.length));
+  EE.forEach(function(e,i){var y=96+i*29,on=i===k,done=i<k;D.text(e[0],50,y,{s:15,c:on?C.y:(done?C.w:C.mut),mono:true,bold:on});if(done)D.text('✓',30,y,{s:14,c:C.ok});});
+  var x0=360,y0=110;D.text('EEPROM (64 bytes)',x0+110,y0-8,{s:14,a:'center',c:C.mut});for(var r=0;r<8;r++)for(var c=0;c<8;c++){var a=r*8+c,tgt=a===0x13,w=tgt&&k>=7;D.rect(x0+c*28,y0+r*28,26,26,tgt?C.m:C.grid,w?RG(C.m,k>=8?.6:.25+.2*Math.sin(t*8)):null,tgt?2:1);}
+  D.text('dir = 13h',x0+110,y0+250,{s:15,a:'center',c:C.m});D.text('dato = 5Ah',x0+110,y0+274,{s:15,a:'center',c:C.m});
+  [['WREN',k>=2&&k<9],['WR',k>=6&&k<8],['EEIF',k>=8]].forEach(function(b,i){var x=x0+i*80;D.dot(x+20,y0+310,10,b[1]?C.hl:RG(C.hl,.1));D.ring(x+20,y0+310,10,C.hl,1.6);D.text(b[0],x+36,y0+315,{s:13,c:C.hl});});}));
+
 })();
